@@ -1,0 +1,47 @@
+name: isec_validation
+description: Performs a VCF isec to find variants that intersect an input vcf and a truth vcf.
+keywords:
+  - bcftools
+  - isec
+  - validation  
+tools:
+  - bcftools:
+      description: BCFtools is a set of utilities that manipulate variant calls in the Variant Call Format (VCF) and its binary counterpart BCF. All commands work transparently with both VCFs and BCFs, both uncompressed and BGZF-compressed.
+      homepage: https://samtools.github.io/bcftools/bcftools.html
+      documentation: https://samtools.github.io/bcftools/bcftools.html
+input:
+  - run:
+      type: string
+      description: Name of the runfolder - derived from the parent basename of the fastq directory
+  - readgroup:
+      type: string
+      description: Sample identifier - derived from the fastq filename
+  - vcf:
+      type: file
+      description: Metrics files from previous anaylsis steps
+      pattern: "*.vcf.gz"
+  - vcf_index:
+      type: file
+      description: Tabix file for input vcf
+      pattern: "*.vcf.gz.tbi"
+  - truth_vcf:
+      type: file
+      description: Truth VCF containing known and expected variant calls for the panel
+      pattern: "truth_*.vcf.gz"
+  - truth_vcf_index:
+      type: file
+      description: Tabix file for truth vcf
+      pattern: "truth_*.vcf.gz.tbi"
+output:
+  - isec_files:
+      type: file
+      description: output intersected vcfs - 0000.vcf are variants unique to the input, 0001.vcf are variants unique to the truth, 0003.vcf are variants from the truth, present in both input and truth
+      pattern: "isec_out*/000?.vcf"
+
+container:
+  - docker: "seglh/snappy_python3_ngstools:1.0.2@sha256:c762d2ca67e52068b7bf9ef4ba4ff4466a44f8b3eead2ba5b91dd29ca7193bd1"
+
+pipeline_configuration:
+  - ext.args: Additional arguments can be supplied on the pipeline level in a conf/modules.config file using "withName 'isec_validation'"
+  - resources: cpu and memory values are to be defined using the "mutect_norm_compute" label within a pipeline level config file.
+  - container: default image can be overidden using a pipeline level config file.

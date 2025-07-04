@@ -13,21 +13,42 @@
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta": ["id"]
             },
-            "fastq_1": {
+            "sample_vcf": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.vcf\\.gz$",
+                "errorMessage": "sample vcf file for validation which cannot contain spaces and must have extension '.vcf.gz'"
             },
-            "fastq_2": {
+            "truth_vcf": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.vcf\\.gz$",
+                "errorMessage": "full truth vcf file which cannot contain spaces and must have extension '.vcf.gz'"
+            },
+            "variant_vcf": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.vcf\\.gz$",
+                "errorMessage": "vcf with known truth variants only"
+            },
+            "json": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.json$",
+                "errorMessage": "kch pipeline qc compendium for sample being tested"
+            },
+            "truth_json": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.json$",
+                "errorMessage": "kch pipeline qc compendium of truth QC metrics if reuqired for comparison"
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample", "sample_vcf", "truth_vcf"]
     }
 }

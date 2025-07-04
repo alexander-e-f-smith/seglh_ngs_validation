@@ -75,26 +75,22 @@ workflow PIPELINE_INITIALISATION {
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+            meta, vcf1, vcf2, variant_vcf, json, truth_json ->
+                if (vcf2) {
+                    return  [ meta.id, vcf1, vcf2, variant_vcf, json, truth_json ]
                 }
         }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
+        .groupTuple() 
         .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
+            meta, vcf1, vcf2, variant_vcf, json, truth_json ->
+                return [ meta, vcf1, vcf2, variant_vcf.flatten(), json, truth_json.flatten() ]
         }
         .set { ch_samplesheet }
-
+        ch_samplesheet.view()
     emit:
     samplesheet = ch_samplesheet
     versions    = ch_versions
+   
 }
 
 /*

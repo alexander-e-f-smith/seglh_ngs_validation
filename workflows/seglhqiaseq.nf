@@ -3,15 +3,12 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seglhqiaseq_pipeline'
-include { trimmomatic            } from '../modules/local/trimmomatic/main'
-include { UMITOOLS_EXTRACT       } from '../modules/nf-core/umitools/extract/main'
-include { CUTADAPT               } from '../modules/nf-core/cutadapt/main'
+include { ISEC_VALIDATION          } from '../modules/local/bcftools/isec/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,36 +24,45 @@ workflow SEGLHQIASEQ {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+
+    // collect resources
+    isec_target_file = Channel.fromPath(params.isec_filter_bed).collect()
+
+    // organize input files into channels
+    vcfs_ch = ch_samplesheet.map { meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json-> tuple(meta, sample_vcf, truth_vcf, variant_vcf) }.view()
 
     //
-    // trimmomatic module
+    // MODULE: Run bcftools isec
     //
-    adapters = file(params.qiagen_adapters)
-    TRIM1_ch = trimmomatic(ch_samplesheet, adapters)
-    ch_versions = ch_versions.mix(trimmomatic.out.versions.first())
+        ISEC_VALIDATION (
+        vcfs_ch, isec_target_file
+    )
+    //ch_multiqc_files = ch_multiqc_files.mix(ISEC_VALIDATION.out.zip.collect{it[1]})
+    ch_versions = ch_versions.mix(ISEC_VALIDATION.out.versions.first())
+    
+    combine_json_ch = (ch_samplesheet).map {meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json -> tuple(json, truth_json)}.collect().view()
+    //
+    // another module
+    //
+    //resources_file_ch = file(params.qiagen_adapters)
+    //another_ch = newmodule(ch_samplesheet, resources_file)
+    //ch_versions = ch_versions.mix(trimmomatic.out.versions.first())
 
 
     //
     // umiextract module
     //
-    UMITOOLS_EXTRACT(trimmomatic.out.filtered_fastq)
-    ch_versions = ch_versions.mix(UMITOOLS_EXTRACT.out.versions.first())
+    //UMITOOLS_EXTRACT(trimmomatic.out.filtered_fastq)
+    //ch_versions = ch_versions.mix(UMITOOLS_EXTRACT.out.versions.first())
     //ch_multiqc_files = ch_multiqc_files.mix(UMITOOLS_EXTRACT.out.umiextract_metrics{it[1]})
 
 
     // cutadapt module
     //
-    CUTADAPT(UMITOOLS_EXTRACT.out.reads)
-    ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
-    ch_multiqc_files = ch_multiqc_files.mix(CUTADAPT.out.log.collect{it[1]})
+    //CUTADAPT(UMITOOLS_EXTRACT.out.reads)
+    //ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
+    //ch_multiqc_files = ch_multiqc_files.mix(CUTADAPT.out.log.collect{it[1]})
 
     //
     // Collate and save software versions

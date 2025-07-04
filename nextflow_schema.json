@@ -40,6 +40,13 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                },
+                "pipeline_resources": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "path to shared resources. Need to specifiy DX project",
+                    "help_text": "for local running path provide full path to run fastq dir eg -- pipeline_resources /home/work/nextflow_pipelines/validation_pipeline",
+                    "fa_icon": "fas fa-folder-open"
                 }
             }
         },
