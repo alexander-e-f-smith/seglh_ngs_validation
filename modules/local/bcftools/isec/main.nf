@@ -10,9 +10,11 @@ process ISEC_VALIDATION {
     path(bed)
 
     output:
-    tuple val(meta), path("*.tbi")                                      ,  emit: vcf_index
-    tuple val(meta), path("isec_out_{A,B}_${meta}/*vcf")                ,  emit: isec_files
-    path  "versions.yml"                                                ,  emit: versions
+    tuple val(meta), path("*.tbi")                                                  ,  emit: vcf_index
+    tuple val(meta), path("isec_out_{A,B}_${meta}/{${meta}_0000,${meta}_0001}.vcf")     ,  emit: isec_unique_variants
+    tuple val(meta), path("isec_out_B_${meta}/${meta}_0003.vcf")                    ,  emit: isec_concordant_sample
+    tuple val(meta), path("isec_out_B_${meta}/${meta}_0002.vcf")                    ,  emit: isec_concordant_truth
+    path  "versions.yml"                                                            ,  emit: versions
     
 
     script:
@@ -24,8 +26,11 @@ process ISEC_VALIDATION {
     """
     tabix ${sample_vcf} & tabix ${truth_vcf} \\
         && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${sample_vcf} ${truth_vcf} -p ${output1} \\
-        && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${truth_vcf} ${sample_vcf} -p ${output2}
-    
+        && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${truth_vcf} ${sample_vcf} -p ${output2} \\
+        && cd ${output1} && mv 0000.vcf ${meta}_0000.vcf && mv 0001.vcf ${meta}_0001.vcf && cd ../ \\
+        && cd ${output2} && mv 0000.vcf ${meta}_0000.vcf && mv 0001.vcf ${meta}_0001.vcf \\
+        && mv 0003.vcf ${meta}_0003.vcf && mv 0002.vcf ${meta}_0002.vcf && cd ../ \\
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')

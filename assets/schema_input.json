@@ -39,14 +39,28 @@
                 "format": "file-path",
                 "exists": true,
                 "pattern": "^\\S+\\.json$",
-                "errorMessage": "kch pipeline qc compendium for sample being tested"
+                "errorMessage": "kch pipeline qc compendium for sample being tested; optional - check samplesheet fomatting"
             },
             "truth_json": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
                 "pattern": "^\\S+\\.json$",
-                "errorMessage": "kch pipeline qc compendium of truth QC metrics if reuqired for comparison"
+                "errorMessage": "kch pipeline qc compendium of truth QC metrics if required for comparison; optional - check samplesheet fomatting"
+            },
+            "exon_cov": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\_exoncoverge_metrics$",
+                "errorMessage": "kch pipeline coverage output; optional - check samplesheet fomatting"
+            },
+            "truth_exon_cov": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\_exoncoverge_metrics$",
+                "errorMessage": "kch pipeline coverage output for truth experiments; optional -check samplesheet fomatting"
             }
         },
         "required": ["sample", "sample_vcf", "truth_vcf"]
