@@ -24,7 +24,8 @@ process ISEC_VALIDATION {
     def output2 = "isec_out_B_${meta}"
 
     """
-    tabix ${sample_vcf} & tabix ${truth_vcf} \\
+    tabix ${sample_vcf} 
+    tabix ${truth_vcf} \\
         && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${sample_vcf} ${truth_vcf} -p ${output1} \\
         && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${truth_vcf} ${sample_vcf} -p ${output2} \\
         && cd ${output1} && mv 0000.vcf ${meta}_0000.vcf && mv 0001.vcf ${meta}_0001.vcf && cd ../ \\

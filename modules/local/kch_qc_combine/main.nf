@@ -1,23 +1,25 @@
-process COMBINE_QC {
+process COMBINE_KCH_QC {
 
-    tag { "combine_qc" }
+    tag { "$meta" }
     label "process_single"
-    container "docker.io/seglh/snappy_python3_ngstools:1.0.2@sha256:c762d2ca67e52068b7bf9ef4ba4ff4466a44f8b3eead2ba5b91dd29ca7193bd1"
+    container "docker.io/seglh/alex_validationtools@sha256:bec3658f87699b978eb8b2009f2a42f08cf328913bd58f58fa09b1a080890881"
     debug true
 
     input:
     tuple val(meta), path(QC_json), path(QC_json_truth), path(depth_file), path(depth_file_truth)
 
     output:
-    tuple val(meta), path("${meta}_consolidated_kch_qc*")
+    tuple val(meta), path("${meta}*_consolidated_kch_qc*")
     
     script:
     coverage_settings = task.ext.args ?: ''
 
     """
-    test1.sh ${QC_json} ${depth_file} ${meta} ${meta}_consolidated_kch_qc
+    test1.sh ${QC_json} ${depth_file} ${meta}_consolidated_kch_qc obs
     
-    test1.sh ${QC_json_truth} ${depth_file_truth} ${meta} ${meta}_consolidated_kch_qc_truth 
+    test1.sh ${QC_json_truth} ${depth_file_truth} ${meta}_consolidated_kch_qc_truth exp
+
+    paste -d "\\t" ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_truth |  tee -a ${meta}_combined_consolidated_kch_qc > /dev/null
     
     #cat <<-END_VERSIONS > versions.yml
     #"${task.process}":

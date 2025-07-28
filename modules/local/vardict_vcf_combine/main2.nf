@@ -25,27 +25,27 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     for file in $batch_sample_concordant
     do
         id=\$(basename \$file .vcf)
-        bgzip \${file}
-        tabix \${file}.gz
-        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file}.gz --output \${id}_batch_sample_concordant_variants.tsv
+        bgzip \${file} && \\
+        tabix \${file}.gz && \\
+        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file}.gz | sort -n -k1 -k2 >  \${id}_batch_sample_concordant_variants.tsv
     done
-    echo -e \$head | tee -a batch_sample_concordant_variants_headed.tsv
-    cat *_batch_sample_concordant_variants.tsv | sort -n -k1 -k2 | tee -a batch_sample_concordant_variants_headed.tsv
+    echo -e \$head | tee -a batch_sample_concordant_variants_headed.tsv > /dev/null && \\
+    cat *_batch_sample_concordant_variants.tsv  | tee -a batch_sample_concordant_variants_headed.tsv > /dev/null
 
    for file in $batch_truth_concordant
    do
         id=\$(basename \$file .vcf)
-        bgzip \${file}
-        tabix \${file}.gz
-        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file}.gz --output \${id}_batch_truth_concordant_variants.tsv
+        bgzip \${file} && \\
+        tabix \${file}.gz && \\
+        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file}.gz | sort -n -k1 -k2 > \${id}_batch_truth_concordant_variants.tsv
     done
-    echo -e \$headtruth | tee -a batch_truth_concordant_variants_headed.tsv
-    cat *_batch_truth_concordant_variants.tsv | sort -n -k1 -k2 | tee -a batch_truth_concordant_variants_headed.tsv
+    echo -e \$headtruth | tee -a batch_truth_concordant_variants_headed.tsv > /dev/null && \\
+    cat *_batch_truth_concordant_variants.tsv | tee -a batch_truth_concordant_variants_headed.tsv > /dev/null && \\
 
-    paste -d '\\t' batch_sample_concordant_variants_headed.tsv batch_truth_concordant_variants_headed.tsv > batch_combined_concordant_variants_headed.tsv
+    paste -d '\\t' batch_sample_concordant_variants_headed.tsv batch_truth_concordant_variants_headed.tsv > batch_combined_concordant_variants_headed.tsv && \\
 
-    correlation.R batch_combined_concordant_variants_headed.tsv Vardict VAF AF exp_AF ${expected_data_source} ${observed_data_source} batch
-    correlation.R batch_combined_concordant_variants_headed.tsv Vardict VD VD exp_VD ${expected_data_source} ${observed_data_source} batch
+    correlation.R batch_combined_concordant_variants_headed.tsv Vardict VAF AF exp_AF ${expected_data_source} ${observed_data_source} batch 1 1
+    correlation.R batch_combined_concordant_variants_headed.tsv Vardict VD VD exp_VD ${expected_data_source} ${observed_data_source} batch 5000 5000
     #cat <<-END_VERSIONS > versions.yml
     #"${task.process}":
     #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')

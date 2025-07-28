@@ -21,25 +21,25 @@ process CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     """
     #extract_essential_qc_and_depth_from_snappy2.sh combined_kch_qc
     head="CHROM\\tPOS\\tend\\tREF\\tALT\\tAF\\tVD\\tDP\\tSAMPLE]\\tFILTER"
-    headtruth="exp_CHROM\\texp_POS\\texp_end\\texp_REF\\texp_ALT\\texp_AF\\texp_VD\\texp_DP\\texp_SAMPLE\\texp_FILTER"
-    bgzip ${sample_concordant} & bgzip ${truth_concordant}
-    tabix ${sample_concordant}.gz & tabix ${truth_concordant}.gz 
+    headtruth="exp_CHROM\\texp_POS\\texp_end\\texp_REF\\texp_ALT\\texp_AF\\texp_VD\\texp_DP\\texp_SAMPLE\\texp_FILTER" 
+    bgzip ${sample_concordant} && tabix ${sample_concordant}.gz && \\
+    bgzip ${truth_concordant} && tabix ${truth_concordant}.gz && \\
     bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${sample_concordant}.gz --output ${meta}_sample_concordant_variants.tsv
-    bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${truth_concordant}.gz --output ${meta}_truth_concordant_variants.tsv
-    echo -e \$head | tee -a ${meta}_sample_concordant_variants_headed.tsv
-    echo -e \$headtruth | tee -a ${meta}_truth_concordant_variants_headed.tsv 
-    sort -n -k1 -k2 ${meta}_sample_concordant_variants.tsv | tee -a ${meta}_sample_concordant_variants_headed.tsv        
-    sort -n -k1 -k2 ${meta}_truth_concordant_variants.tsv |  tee -a ${meta}_truth_concordant_variants_headed.tsv
-    paste -d '\\t' ${meta}_sample_concordant_variants_headed.tsv ${meta}_truth_concordant_variants_headed.tsv > ${meta}_combined_concordant_variants_headed.tsv 
+    bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${truth_concordant}.gz --output ${meta}_truth_concordant_variants.tsv && \\
+    echo -e \$head | tee -a ${meta}_sample_concordant_variants_headed.tsv > /dev/null && \\
+    echo -e \$headtruth | tee -a ${meta}_truth_concordant_variants_headed.tsv > /dev/null && \\
+    sort -n -k1 -k2 ${meta}_sample_concordant_variants.tsv | tee -a ${meta}_sample_concordant_variants_headed.tsv > /dev/null        
+    sort -n -k1 -k2 ${meta}_truth_concordant_variants.tsv |  tee -a ${meta}_truth_concordant_variants_headed.tsv > /dev/null && \\
+    paste -d '\\t' ${meta}_sample_concordant_variants_headed.tsv ${meta}_truth_concordant_variants_headed.tsv > ${meta}_combined_concordant_variants_headed.tsv && \\
 
-    correlation.R ${meta}_combined_concordant_variants_headed.tsv Vardict VAF AF exp_AF ${expected_data_source} ${observed_data_source} ${meta}
-    correlation.R ${meta}_combined_concordant_variants_headed.tsv Vardict VD VD exp_VD ${expected_data_source} ${observed_data_source} ${meta}
-    #cat <<-END_VERSIONS > versions.yml
-    #"${task.process}":
-    #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
-    #END_VERSIONS
+    correlation.R ${meta}_combined_concordant_variants_headed.tsv Vardict VAF AF exp_AF ${expected_data_source} ${observed_data_source} ${meta} 1 1
+    correlation.R ${meta}_combined_concordant_variants_headed.tsv Vardict VD VD exp_VD ${expected_data_source} ${observed_data_source} ${meta} 5000 5000
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
+    END_VERSIONS
 
     """
-    // #bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%SAMPLE]\\t%FILTER\\n' -R $bedfile  ${file} --output ${ID}_
 
 }

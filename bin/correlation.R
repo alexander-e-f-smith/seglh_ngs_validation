@@ -12,6 +12,10 @@ observed_reading<-args[5] ##field column name
 expected_source<-args[6] ##nature of expected readings
 observed_source<-args[7] ##nature of observed readings
 sample_name<-args[8]
+xlimit<-args[9]
+ylimit<-args[10]
+xnum <-as.numeric(xlimit)
+ynum <-as.numeric(ylimit)
 output<-paste0(sample_name,"_",expected_source,"_",observed_source,"_",reading,"_correlation.pdf")
 
 library(ggplot2)
@@ -26,7 +30,9 @@ ggscatter(file, x = observed_reading, y = expected_reading, color = "#5A5A5A", s
             add.params = list(color = "blue", fill = "gray"),
             conf.int = TRUE,
             cor.coef = TRUE, 
-            cor.coeff.args = list(method = "pearson", r.digits=3),
+            cor.coeff.args = list(method = "pearson", r.digits=3, label.x = 0, label.y = ynum),
+            ylim=c(0, ynum),
+            xlim=c(0, xnum),
             xlab = paste(reading, "expected","(",expected_source,';blue line',")"), ylab = paste(reading, "observed","(",observed_source,';grey points',")"),
             main = paste (reading,"(",caller,")","Trueness (Pearson Correlation 95% CI)\n Observed vs Expected","(",observed_source, 'vs', expected_source,")"))
 dev.off()

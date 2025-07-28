@@ -8,7 +8,8 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seglhqiaseq_pipeline'
-include { ISEC_VALIDATION          } from '../modules/local/bcftools/isec/main'
+include { COMBINE_KCH_QC         } from '../modules/local/kch_qc_combine/main.nf'
+include { ISEC_VALIDATION        } from '../modules/local/bcftools/isec/main'
 include { BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT    } from '../modules/local/vardict_vcf_combine/main2.nf'
 include { CONCORDANT_VARIANTS_PLOTTING_VARDICT} from '../modules/local/concordant_variants_plot_vardict/main.nf'
 
@@ -46,7 +47,7 @@ workflow SEGLHQIASEQ {
     // Module: Run COMBINE_QC
     //
     //resources_file = file(params.qiagen_adapters)
-    //extract_qc = COMBINE_QC(json_ch)
+    extract_qc = COMBINE_KCH_QC(json_ch)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
     //
