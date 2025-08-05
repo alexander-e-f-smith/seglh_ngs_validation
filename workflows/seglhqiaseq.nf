@@ -8,10 +8,12 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seglhqiaseq_pipeline'
+include { EXTRACT_KCH_QC         } from '../modules/local/kch_qc_extract/main.nf'
 include { COMBINE_KCH_QC         } from '../modules/local/kch_qc_combine/main.nf'
-include { ISEC_VALIDATION        } from '../modules/local/bcftools/isec/main'
-include { BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT    } from '../modules/local/vardict_vcf_combine/main2.nf'
+include { ISEC_VALIDATION        } from '../modules/local/bcftools/isec/main.nf'
+include { BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT    } from '../modules/local/batch_concordant_variants_plot_vardict/main.nf'
 include { CONCORDANT_VARIANTS_PLOTTING_VARDICT} from '../modules/local/concordant_variants_plot_vardict/main.nf'
+include { BATCH_SENSITIVITY_SPECIFICITY    } from '../modules/local/batch_unique_variants_merge/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,17 +39,22 @@ workflow SEGLHQIASEQ {
     vcfs_combine_ch = ch_samplesheet.map { meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json, exon_cov, truth_exon_cov-> tuple(sample_vcf) }.collect()
     truth_vcfs_combine_ch = ch_samplesheet.map { meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json, exon_cov, truth_exon_cov-> tuple(truth_vcf) }.flatten().collect()
     json_ch = (ch_samplesheet).map {meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json, exon_cov, truth_exon_cov-> tuple(meta, json, truth_json, exon_cov, truth_exon_cov) }
-    json_combine_ch = (ch_samplesheet).map {meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json, exon_cov, truth_exon_cov-> tuple(json, truth_json, exon_cov, truth_exon_cov) }.flatten().collect()
-    vcfs_combine_ch.view()
-    truth_vcfs_combine_ch
-    json_combine_ch
+    //json_combine_ch = (ch_samplesheet).map {meta, sample_vcf, truth_vcf, variant_vcf, json, truth_json, exon_cov, truth_exon_cov-> tuple(json, truth_json, exon_cov, truth_exon_cov) }.flatten().collect()
+
+
+    //
+    // Module: Run EXTRACT_QC
+    //
+    //resources_file = file(params.qiagen_adapters)
+    extract_qc_ch = EXTRACT_KCH_QC(json_ch)
+    ch_versions = ch_versions.mix(EXTRACT_KCH_QC.out.versions.first())
 
 
     //
     // Module: Run COMBINE_QC
     //
-    //resources_file = file(params.qiagen_adapters)
-    extract_qc = COMBINE_KCH_QC(json_ch)
+    combine_kch_qc_files_ch = EXTRACT_KCH_QC.out.sample_kch_qc.map { meta, qc_files -> tuple( qc_files ) }.collect()
+    combine_qc_ch = COMBINE_KCH_QC(combine_kch_qc_files_ch)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
     //
@@ -58,27 +65,37 @@ workflow SEGLHQIASEQ {
     )
     //ch_multiqc_files = ch_multiqc_files.mix(ISEC_VALIDATION.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(ISEC_VALIDATION.out.versions.first())
-    ISEC_VALIDATION.out.isec_concordant_sample.view()
-    ISEC_VALIDATION.out.isec_unique_variants.view()
+    //ISEC_VALIDATION.out.isec_concordant_sample.view()
+    //ISEC_VALIDATION.out.isec_unique_variants.view()
     
     //
     // Module: Run CONCORDANT_VARIANTS_PLOTTING
     //
     //resources_file = file(params.qiagen_adapters)
-    vcfs_plot_ch = CONCORDANT_VARIANTS_PLOTTING_VARDICT(ISEC_VALIDATION.out.isec_concordant_sample, ISEC_VALIDATION.out.isec_concordant_truth)
+    vcfs_plot_ch = CONCORDANT_VARIANTS_PLOTTING_VARDICT(ISEC_VALIDATION.out.isec_concordant_sample, ISEC_VALIDATION.out.isec_concordant_truth, ISEC_VALIDATION.out.isec_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
 
     //
-    // Module: Run MERGE_VCFS_PLOTTING 
+    // Module: Run BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT 
     //
     //resources_file = file(params.qiagen_adapters)
     combine_sample_concordant = (ISEC_VALIDATION.out.isec_concordant_sample).map {meta, vcf-> tuple(vcf) }.collect()
     combine_truth_concordant = (ISEC_VALIDATION.out.isec_concordant_truth).map {meta, vcf-> tuple(vcf) }.collect()
-    merge_vcfs_plot_ch = BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT(combine_sample_concordant, combine_truth_concordant)
-    combine_sample_concordant.view()
+    combine_vcf_indexes = (ISEC_VALIDATION.out.isec_vcf_indexes).map {meta, indexes-> tuple(indexes) }.collect()
+    merge_vcfs_plot_ch = BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT(combine_sample_concordant, combine_truth_concordant, combine_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
+    //
+    // Module: Run BATCH_SENSITIVITY_SPECIFICITY
+    //
+    //resources_file = file(params.qiagen_adapters)
+    batch_sample_unique = (ISEC_VALIDATION.out.isec_unique_sample_variants).map {meta, vcf-> tuple(vcf) }.collect()
+    batch_truth_unique = (ISEC_VALIDATION.out.isec_unique_truth_variants).map {meta, vcf-> tuple(vcf) }.collect()
+    batch_variant_stats = (ISEC_VALIDATION.out.isec_variant_comparison_stats).map {meta, stats-> tuple(stats) }.collect()
+    batch_detection_performance_ch = BATCH_SENSITIVITY_SPECIFICITY(batch_sample_unique, batch_truth_unique, batch_variant_stats, combine_vcf_indexes)
+    //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())    
+    batch_sample_unique.view()
 
     //
     // umiextract module

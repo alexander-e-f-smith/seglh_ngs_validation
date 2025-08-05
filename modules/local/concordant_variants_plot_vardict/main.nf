@@ -7,6 +7,7 @@ process CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     input:
     tuple val(meta), path(sample_concordant)
     tuple val(meta), path(truth_concordant)
+    tuple val(meta), path(vcf_indexes)
 
     output:
     tuple val(meta), path("${meta}_*_concordant_variants_headed.tsv")
@@ -22,10 +23,8 @@ process CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     #extract_essential_qc_and_depth_from_snappy2.sh combined_kch_qc
     head="CHROM\\tPOS\\tend\\tREF\\tALT\\tAF\\tVD\\tDP\\tSAMPLE]\\tFILTER"
     headtruth="exp_CHROM\\texp_POS\\texp_end\\texp_REF\\texp_ALT\\texp_AF\\texp_VD\\texp_DP\\texp_SAMPLE\\texp_FILTER" 
-    bgzip ${sample_concordant} && tabix ${sample_concordant}.gz && \\
-    bgzip ${truth_concordant} && tabix ${truth_concordant}.gz && \\
-    bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${sample_concordant}.gz --output ${meta}_sample_concordant_variants.tsv
-    bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${truth_concordant}.gz --output ${meta}_truth_concordant_variants.tsv && \\
+    bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${sample_concordant} --output ${meta}_sample_concordant_variants.tsv
+    bcftools query  -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  ${truth_concordant} --output ${meta}_truth_concordant_variants.tsv && \\
     echo -e \$head | tee -a ${meta}_sample_concordant_variants_headed.tsv > /dev/null && \\
     echo -e \$headtruth | tee -a ${meta}_truth_concordant_variants_headed.tsv > /dev/null && \\
     sort -n -k1 -k2 ${meta}_sample_concordant_variants.tsv | tee -a ${meta}_sample_concordant_variants_headed.tsv > /dev/null        

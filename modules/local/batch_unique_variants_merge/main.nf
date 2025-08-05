@@ -1,0 +1,40 @@
+process BATCH_SENSITIVITY_SPECIFICITY {
+
+    tag { "batch_sen_spec" }
+    label "batch_sen_spec"
+    container "docker.io/seglh/alex_validationtools:1.0.0@sha256:bec3658f87699b978eb8b2009f2a42f08cf328913bd58f58fa09b1a080890881"
+
+    input:
+    path(batch_sample_unique)
+    path(batch_truth_unique)
+    path(batch_variant_stats)
+    path(vcf_indexes)
+
+    output:
+    path("batch_*_unique_variants.tsv")
+    path("batch_*_unique_variants.vcf.gz*")
+    path("batch_variant_compartison_stats")
+
+    script:
+    def target = task.ext.args ?: ''
+    def expected_data_source = task.ext.args2 ?: ''
+    def observed_data_source = task.ext.args3 ?: ''
+    
+
+    """
+    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join $batch_sample_unique -O z > batch_exp_unique_variants.vcf.gz && \\
+    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join $batch_truth_unique -O z > batch_truth_unique_variants.vcf.gz && \\
+    tabix batch_exp_unique_variants.vcf.gz && tabix batch_truth_unique_variants.vcf.gz && \\
+    bcftools query -H -f '%CHROM\\t%POS\\t%REF\\t%ALT\\t%FILTER\\t[\\t%DP][\\t%AF][\\t%VD]\\t%INFO/MSI\\t%INFO/MSILEN\\t%INFO/QUAL\\t%INFO/NM\\t%INFO/MQ\\t%INFO/SN\\t%INFO/PMEAN\\t%INFO/LSEQ\\t%INFO/RSEQ\\n' batch_exp_unique_variants.vcf.gz > batch_exp_unique_variants.tsv && \\
+    bcftools query -H -f '%CHROM\\t%POS\\t%REF\\t%ALT\\t%FILTER\\t[\\t%DP][\\t%AF][\\t%VD]\\t%INFO/MSI\\t%INFO/MSILEN\\t%INFO/QUAL\\t%INFO/NM\\t%INFO/MQ\\t%INFO/SN\\t%INFO/PMEAN\\t%INFO/LSEQ\\t%INFO/RSEQ\\n' batch_truth_unique_variants.vcf.gz > batch_truth_unique_variants.tsv
+    cat $batch_variant_stats > batch_variant_compartison_stats
+
+
+    #cat <<-END_VERSIONS > versions.yml
+    #"${task.process}":
+    #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
+    #END_VERSIONS
+
+    """
+
+}

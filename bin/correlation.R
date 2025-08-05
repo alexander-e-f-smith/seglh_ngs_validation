@@ -2,7 +2,6 @@
 
 ##ggpubr_0.4.0
 ##correlation plots
-### ggpubr install requires  sudo apt install libcurl4-openssl-dev
 args <-commandArgs(trailingOnly = TRUE)
 file_in1 <- args[1]
 caller <- args[2] ##variant caller

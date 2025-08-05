@@ -1,0 +1,64 @@
+name: roi_coverage
+description: Calculates coverage
+keywords:
+  - bedgraph
+  - metrics
+  - coverage
+tools:
+  - bedtools:
+      description: Collectively, the bedtools utilities are a swiss-army knife of tools for a wide-range of genomics analysis tasks.
+      homepage: https://github.com/arq5x/bedtools2
+      documentation: https://bedtools.readthedocs.io/en/latest/content/overview.html
+  - custom:
+      description: custom bed4.awk script which prints a 4-column format of the bed-file
+  - custom:
+      description: custom bedCoverage.py script which calculates percentage of coverage per gene over given thresholds in the sample, and reports coverage of exons with no or low coverage (threshold defined by set arg).
+  - custom:
+      description: custom Metrics.py script used to parse picard/kraken style metrics
+  - custom:
+      description: custom bed2hgvs.py script annotates bed-regions with HGVS nomenclature.
+input:
+  - run:
+      type: string
+      description: Name of the runfolder - derived from the parent basename of the fastq directory
+  - readgroup:
+      type: string
+      description: Sample identifier - derived from the fastq filename
+  - bedgraph:
+      type: file
+      description: Bed graph file containing depth values of the sample bam
+      pattern: "*_STdepth.bedGraph"
+  - ref_fasta:
+      type: file
+      description: Genome reference fasta file
+      pattern: "*.fasta"
+  - ref_dict:
+      type: file
+      description: Genome reference dict file
+      pattern: "*.dict"
+  - ref_gene:
+      type: file
+      description: UCSC refGene file
+      pattern: "refGene"
+  - roi_bed:
+      type: file
+      description: Region of interest bed file for the panel
+      pattern: "*.bed"
+
+output:
+  - metrics_files:
+      type: file
+      description: Output metrics files
+      pattern: "*_metrics|*.tab"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+container:
+  - docker: "seglh/snappy_ngstools@sha256:29b646fb804bb8b9f283c84eb6417b507a56a1760697091657edc378603f3bb0"
+
+pipeline_configuration:
+  - ext.args: Additional arguments can be supplied on the pipeline level in a conf/modules.config file using "withName 'roi_coverage'"
+  - resources: cpu and memory values are to be defined using the "roi_cov_compute" label within a pipeline level config file.
+  - container: default image can be overidden using a pipeline level config file.
