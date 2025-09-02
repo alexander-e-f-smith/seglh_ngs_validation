@@ -10,10 +10,10 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     path(vcf_indexes)
 
     output:
-    path("batch_combined_concordant_variants_headed.tsv")   , emit: batch_concordant_combined_tsv
+    path("batch_combined_concordant_variants_headed.tsv")    , emit: batch_concordant_combined_tsv
     path("batch_sample_concordant_merge.vcf.gz")             , emit: batch_sample_concordant_merged_vcf
     path("batch_truth_concordant_merge.vcf.gz")              , emit: batch_truth_concordant_merged_vcf
-    path("*_correlation.pdf")                               , emit: batch_correlation_pdfs
+    path("*_correlation.pdf")                                , emit: batch_correlation_pdfs
 
     script:
     def target = task.ext.args ?: ''
@@ -42,10 +42,11 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     echo -e \$headtruth | tee -a batch_truth_concordant_variants_headed.tsv > /dev/null && \\
     cat *_batch_truth_concordant_variants.tsv | tee -a batch_truth_concordant_variants_headed.tsv > /dev/null && \\
 
-    paste -d '\\t' batch_sample_concordant_variants_headed.tsv batch_truth_concordant_variants_headed.tsv > batch_combined_concordant_variants_headed.tsv && \\
+    paste -d '\\t' batch_sample_concordant_variants_headed.tsv batch_truth_concordant_variants_headed.tsv  > batch_combined_concordant_variants_headed.tsv && \\
 
     correlation.R batch_combined_concordant_variants_headed.tsv Vardict VAF AF exp_AF ${expected_data_source} ${observed_data_source} batch 1 1
-    correlation.R batch_combined_concordant_variants_headed.tsv Vardict VD VD exp_VD ${expected_data_source} ${observed_data_source} batch 5000 5000
+    correlation.R batch_combined_concordant_variants_headed.tsv Vardict Variant_depth VD exp_VD ${expected_data_source} ${observed_data_source} batch 5000 5000
+    correlation.R batch_combined_concordant_variants_headed.tsv Vardict Depth_at_variant_loci DP exp_DP ${expected_data_source} ${observed_data_source} batch 10000 10000
     #cat <<-END_VERSIONS > versions.yml
     #"${task.process}":
     #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')

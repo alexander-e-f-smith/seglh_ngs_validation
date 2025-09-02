@@ -30,14 +30,14 @@ df1 = file1[,c('obs_Total_processed_paired_reads',depthfield1,'obs_Duplication_r
 df2 = file1[,c('exp_Total_processed_paired_reads',depthfield2,'exp_Duplication_rate')]
 
 gg1<-ggplot(data=df1, aes(obs_Total_processed_paired_reads, get(depthfield1))) + 
-    geom_point(aes(size=obs_Duplication_rate), colour="red" )  +
-    scale_size(range = c(2, 3)) + 
-    geom_smooth(data=df1, aes(obs_Total_processed_paired_reads, get(depthfield1), colour=paste(name1,"\n",depthfield1,"vs Processed sequence read number","\n(","loess smoothing=",spanin,")\n")), method = "loess", formula = 'y ~ x', se=TRUE, linetype="dashed", span=spannumber, fullrange=TRUE, level=0.9, linewidth=0.3) +
-    geom_point(data=df2, aes(exp_Total_processed_paired_reads, get(depthfield2), size=exp_Duplication_rate), colour="blue") + guides(size=guide_legend(override.aes=list(colour="grey30"))) +
-    geom_smooth(data=df2, aes(exp_Total_processed_paired_reads, get(depthfield2), colour=paste(name2,"\n",depthfield2,"vs Processed sequence read number","\n(","loess smoothing=",spanin,")\n")), method = "loess", formula = 'y ~ x', se=TRUE, linetype="dashed", span=spannumber, fullrange=TRUE, level=0.9, linewidth=0.3)  +
+    geom_point(aes(size=obs_Duplication_rate), colour="red", alpha=0.3 )  +
+    scale_size(range = c(1, 1.5)) + 
+    geom_smooth(data=df1, aes(obs_Total_processed_paired_reads, get(depthfield1), colour=paste(name1,"\n",depthfield1,"vs Processed sequence read number","\n(","loess smoothing=",spanin,")\n")), method = "loess", formula = 'y ~ x', se=TRUE, linetype="dashed", span=spannumber, fullrange=TRUE, level=0.95, linewidth=0.4, alpha=0.3) +
+    geom_point(data=df2, aes(exp_Total_processed_paired_reads, get(depthfield2), size=exp_Duplication_rate), colour="blue", alpha=0.3) + guides(size=guide_legend(override.aes=list(colour="grey30"))) +
+    geom_smooth(data=df2, aes(exp_Total_processed_paired_reads, get(depthfield2), colour=paste(name2,"\n",depthfield2,"vs Processed sequence read number","\n(","loess smoothing=",spanin,")\n")), method = "loess", formula = 'y ~ x', se=TRUE, linetype="dashed", span=spannumber, fullrange=TRUE, level=0.95, linewidth=0.3, alpha=0.3)  +
     scale_colour_manual(name="Data key:", values=c("red", "blue")) + 
     labs(x = "Processed sequence reads  (pairs)", y = paste("Proportion of ROI covered >","depth X","\n(filtered ROI)" )) + 
-    scale_y_continuous(limits=c(0.7,1), breaks=seq(from = 0.8, to = 1, by = 0.02))  + scale_x_continuous(breaks=pretty_breaks(n=6)) + 
+    scale_y_continuous(limits=c(0.9,1), breaks=seq(from = 0.95, to = 1, by = 0.005))  + scale_x_continuous(breaks=pretty_breaks(n=6)) + 
     ggtitle(title) + 
     geom_hline(yintercept = 0.95, linetype="dotted", linewidth=0.3) + 
     geom_vline(xintercept = reads_required_number, linetype="dotted", linewidth=0.3)

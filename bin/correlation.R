@@ -29,9 +29,10 @@ ggscatter(file, x = observed_reading, y = expected_reading, color = "#5A5A5A", s
             add.params = list(color = "blue", fill = "gray"),
             conf.int = TRUE,
             cor.coef = TRUE, 
-            cor.coeff.args = list(method = "pearson", r.digits=3, label.x = 0, label.y = ynum),
+            cor.coeff.args = list(method = "pearson", r.digits=3, label.x = 0, label.y = ynum, color = "blue"),
             ylim=c(0, ynum),
             xlim=c(0, xnum),
-            xlab = paste(reading, "expected","(",expected_source,';blue line',")"), ylab = paste(reading, "observed","(",observed_source,';grey points',")"),
-            main = paste (reading,"(",caller,")","Trueness (Pearson Correlation 95% CI)\n Observed vs Expected","(",observed_source, 'vs', expected_source,")"))
+            xlab = paste(reading, "expected","(",expected_source,")"), ylab = paste(reading, "observed","(",observed_source,")"),
+            main = paste (reading,"(",caller,")","Trueness (Pearson Correlation 95% CI)\n Observed vs Expected","(",observed_source, 'vs', expected_source,")")) +
+            stat_regline_equation(label.x = 0, label.y = ynum * 0.9) 
 dev.off()

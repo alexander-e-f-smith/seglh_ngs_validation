@@ -32,15 +32,17 @@ process ISEC_VALIDATION {
         && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${truth_vcf} ${sample_vcf} -p ${output2} \\
         && cd ${output1} && mv 0000.vcf ${meta}_A_0000.vcf && mv 0001.vcf ${meta}_A_0001.vcf \\
         && bgzip ${meta}_A_0000.vcf && tabix ${meta}_A_0000.vcf.gz && bgzip ${meta}_A_0001.vcf && tabix ${meta}_A_0001.vcf.gz  \\
-        && no_unique_sample_variants=\$(bcftools stats ${meta}_A_0000.vcf.gz  | grep -v "^#" | grep "number of records" | awk 'BEGIN{OFS="\\t"} {print \$6}') &&  cd ../ \\
+        && no_unique_sample_variants=\$(bcftools stats ${meta}_A_0000.vcf.gz  | grep -v "^#" | grep "number of records" | awk 'BEGIN{OFS="\\t"} {print \$6}') \\
+        && avg_vaf_unique_sample_variants=\$(bcftools query -f '[%AF\\t%DP]\\n'  ${meta}_A_0000.vcf.gz | awk -F'\\t' '{sum+=\$1} END {print sum / NR}') &&  cd ../ \\
         && cd ${output2} && mv 0000.vcf ${meta}_B_0000.vcf && mv 0001.vcf ${meta}_B_0001.vcf \\
         && mv 0003.vcf ${meta}_B_0003.vcf && mv 0002.vcf ${meta}_B_0002.vcf \\
         && bgzip ${meta}_B_0000.vcf && tabix ${meta}_B_0000.vcf.gz && bgzip ${meta}_B_0001.vcf && tabix ${meta}_B_0001.vcf.gz \\
         && bgzip ${meta}_B_0002.vcf && tabix ${meta}_B_0002.vcf.gz && bgzip ${meta}_B_0003.vcf && tabix ${meta}_B_0003.vcf.gz \\
         && no_unique_truth_variants=\$(bcftools stats ${meta}_B_0000.vcf.gz  | grep -v "^#" | grep "number of records" | awk  'BEGIN{OFS="\\t"} {print \$6}') \\
+        && avg_vaf_unique_truth_variants=\$(bcftools query -f '[%AF\\t%DP]\\n'  ${meta}_B_0000.vcf.gz | awk -F'\\t' '{sum+=\$1} END {print sum / NR}') \\
         && no_concordant_variants=\$(bcftools stats ${meta}_B_0003.vcf.gz  | grep -v "^#" | grep "number of records" | awk 'BEGIN{OFS="\\t"} {print \$6}') && cd ../ \\
-        && printf "Sample\\tNumber_unique_sample_variants\\tNumber_unique_truth_variants\\tNumber_concordant_variants\\n" | tee -a ${meta}_variant_comparison_stats \\
-        && printf  "${meta}\\t\$no_unique_sample_variants\\t\$no_unique_truth_variants\\t\$no_concordant_variants\\n" | tee -a  ${meta}_variant_comparison_stats
+        && printf "Sample\\tNumber_unique_sample_variants\\tAvg_VAF_uniq_sample_variants\\tNumber_unique_truth_variants\\tAvg_VAF_uniq_truth_variants\\tNumber_concordant_variants\\n" | tee -a ${meta}_variant_comparison_stats \\
+        && printf  "${meta}\\t\$no_unique_sample_variants\\t\$avg_vaf_unique_sample_variants\\t\$no_unique_truth_variants\\t\$avg_vaf_unique_truth_variants\\t\$no_concordant_variants\\n" | tee -a  ${meta}_variant_comparison_stats
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

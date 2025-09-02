@@ -52,14 +52,14 @@
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.exoncoverage$",
+                "pattern": "^\\S+$",
                 "errorMessage": "kch pipeline coverage output; optional - check samplesheet fomatting"
             },
             "truth_exon_cov": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.exoncoverage$",
+                "pattern": "^\\S+$",
                 "errorMessage": "kch pipeline coverage output for truth experiments; optional -check samplesheet fomatting"
             }
         },

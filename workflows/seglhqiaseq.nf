@@ -81,6 +81,7 @@ workflow SEGLHQIASEQ {
     //
     //resources_file = file(params.qiagen_adapters)
     combine_sample_concordant = (ISEC_VALIDATION.out.isec_concordant_sample).map {meta, vcf-> tuple(vcf) }.collect()
+    combine_sample_concordant.view()
     combine_truth_concordant = (ISEC_VALIDATION.out.isec_concordant_truth).map {meta, vcf-> tuple(vcf) }.collect()
     combine_vcf_indexes = (ISEC_VALIDATION.out.isec_vcf_indexes).map {meta, indexes-> tuple(indexes) }.collect()
     merge_vcfs_plot_ch = BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT(combine_sample_concordant, combine_truth_concordant, combine_vcf_indexes)
@@ -95,7 +96,7 @@ workflow SEGLHQIASEQ {
     batch_variant_stats = (ISEC_VALIDATION.out.isec_variant_comparison_stats).map {meta, stats-> tuple(stats) }.collect()
     batch_detection_performance_ch = BATCH_SENSITIVITY_SPECIFICITY(batch_sample_unique, batch_truth_unique, batch_variant_stats, combine_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())    
-    batch_sample_unique.view()
+    //batch_sample_unique.view()
 
     //
     // umiextract module
