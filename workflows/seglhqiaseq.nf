@@ -53,7 +53,7 @@ workflow SEGLHQIASEQ {
     //
     // Module: Run COMBINE_QC
     //
-    combine_kch_qc_files_ch = EXTRACT_KCH_QC.out.sample_kch_qc.map { meta, qc_files -> tuple( qc_files ) }.collect()
+    combine_kch_qc_files_ch = EXTRACT_KCH_QC.out.sample_kch_qc.map { meta, qc_files -> tuple( qc_files ) }.collect(sort: {it.baseName})
     combine_qc_ch = COMBINE_KCH_QC(combine_kch_qc_files_ch)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
@@ -80,11 +80,11 @@ workflow SEGLHQIASEQ {
     // Module: Run BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT 
     //
     //resources_file = file(params.qiagen_adapters)
-    combine_sample_concordant_A = (ISEC_VALIDATION.out.isec_concordant_sample_A).map {meta, vcf-> tuple(vcf) }.collect()
-    combine_truth_concordant_A = (ISEC_VALIDATION.out.isec_concordant_truth_A).map {meta, vcf-> tuple(vcf) }.collect()
-    combine_sample_concordant_B = (ISEC_VALIDATION.out.isec_concordant_sample_B).map {meta, vcf-> tuple(vcf) }.collect()
-    combine_truth_concordant_B = (ISEC_VALIDATION.out.isec_concordant_truth_B).map {meta, vcf-> tuple(vcf) }.collect()
-    combine_vcf_indexes = (ISEC_VALIDATION.out.isec_vcf_indexes).map {meta, indexes-> tuple(indexes) }.collect()
+    combine_sample_concordant_A = (ISEC_VALIDATION.out.isec_concordant_sample_A).map {meta, vcf-> tuple(vcf) }.collect(sort: {it.baseName})
+    combine_truth_concordant_A = (ISEC_VALIDATION.out.isec_concordant_truth_A).map {meta, vcf-> tuple(vcf) }.collect(sort: {it.baseName})
+    combine_sample_concordant_B = (ISEC_VALIDATION.out.isec_concordant_sample_B).map {meta, vcf-> tuple(vcf) }.collect(sort: {it.baseName})
+    combine_truth_concordant_B = (ISEC_VALIDATION.out.isec_concordant_truth_B).map {meta, vcf-> tuple(vcf) }.collect(sort: {it.baseName})
+    combine_vcf_indexes = (ISEC_VALIDATION.out.isec_vcf_indexes).map {meta, indexes-> tuple(indexes) }.collect(sort: {it.baseName})
     merge_vcfs_plot_ch = BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT(combine_sample_concordant_A, combine_truth_concordant_A, combine_sample_concordant_B, combine_truth_concordant_B, combine_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
@@ -92,9 +92,9 @@ workflow SEGLHQIASEQ {
     // Module: Run BATCH_SENSITIVITY_SPECIFICITY
     //
     //resources_file = file(params.qiagen_adapters)
-    batch_sample_unique = (ISEC_VALIDATION.out.isec_unique_sample_variants).map {meta, vcf-> tuple(vcf) }.collect()
-    batch_truth_unique = (ISEC_VALIDATION.out.isec_unique_truth_variants).map {meta, vcf-> tuple(vcf) }.collect()
-    batch_variant_stats = (ISEC_VALIDATION.out.isec_variant_comparison_stats).map {meta, stats-> tuple(stats) }.collect()
+    batch_sample_unique = (ISEC_VALIDATION.out.isec_unique_sample_variants).map {meta, vcf-> tuple(vcf) }.collect(sort: {it.baseName}).view()
+    batch_truth_unique = (ISEC_VALIDATION.out.isec_unique_truth_variants).map {meta, vcf-> tuple(vcf) }.collect(sort: {it.baseName})
+    batch_variant_stats = (ISEC_VALIDATION.out.isec_variant_comparison_stats).map {meta, stats-> tuple(stats) }.collect(sort: {it.baseName})
     batch_detection_performance_ch = BATCH_SENSITIVITY_SPECIFICITY(batch_sample_unique, batch_truth_unique, batch_variant_stats, combine_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())    
     //batch_sample_unique.view()
