@@ -2,7 +2,7 @@ process BATCH_SENSITIVITY_SPECIFICITY {
 
     tag { "batch_sen_spec" }
     label "batch_sen_spec"
-    container "docker.io/seglh/alex_validationtools:1.0.0@sha256:bec3658f87699b978eb8b2009f2a42f08cf328913bd58f58fa09b1a080890881"
+    container "docker.io/seglh/bw_validation_tools@sha256:99fb766c096bd828c9cd0a9c88dba97eec3aab8f1f4c31a99c691096e98f8e08"
 
     input:
     path(batch_sample_unique)
