@@ -72,7 +72,7 @@ workflow SEGLHQIASEQ {
     // Module: Run CONCORDANT_VARIANTS_PLOTTING
     //
     //resources_file = file(params.qiagen_adapters)
-    vcfs_plot_ch = CONCORDANT_VARIANTS_PLOTTING_VARDICT(ISEC_VALIDATION.out.isec_concordant_sample, ISEC_VALIDATION.out.isec_concordant_truth, ISEC_VALIDATION.out.isec_vcf_indexes)
+    vcfs_plot_ch = CONCORDANT_VARIANTS_PLOTTING_VARDICT(ISEC_VALIDATION.out.isec_concordant_sample_A, ISEC_VALIDATION.out.isec_concordant_truth_A, ISEC_VALIDATION.out.isec_concordant_sample_B, ISEC_VALIDATION.out.isec_concordant_truth_B, ISEC_VALIDATION.out.isec_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
 
@@ -80,11 +80,12 @@ workflow SEGLHQIASEQ {
     // Module: Run BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT 
     //
     //resources_file = file(params.qiagen_adapters)
-    combine_sample_concordant = (ISEC_VALIDATION.out.isec_concordant_sample).map {meta, vcf-> tuple(vcf) }.collect()
-    combine_sample_concordant.view()
-    combine_truth_concordant = (ISEC_VALIDATION.out.isec_concordant_truth).map {meta, vcf-> tuple(vcf) }.collect()
+    combine_sample_concordant_A = (ISEC_VALIDATION.out.isec_concordant_sample_A).map {meta, vcf-> tuple(vcf) }.collect()
+    combine_truth_concordant_A = (ISEC_VALIDATION.out.isec_concordant_truth_A).map {meta, vcf-> tuple(vcf) }.collect()
+    combine_sample_concordant_B = (ISEC_VALIDATION.out.isec_concordant_sample_B).map {meta, vcf-> tuple(vcf) }.collect()
+    combine_truth_concordant_B = (ISEC_VALIDATION.out.isec_concordant_truth_B).map {meta, vcf-> tuple(vcf) }.collect()
     combine_vcf_indexes = (ISEC_VALIDATION.out.isec_vcf_indexes).map {meta, indexes-> tuple(indexes) }.collect()
-    merge_vcfs_plot_ch = BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT(combine_sample_concordant, combine_truth_concordant, combine_vcf_indexes)
+    merge_vcfs_plot_ch = BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT(combine_sample_concordant_A, combine_truth_concordant_A, combine_sample_concordant_B, combine_truth_concordant_B, combine_vcf_indexes)
     //ch_versions = ch_versions.mix(QC_COMBINE.out.versions.first())
 
     //

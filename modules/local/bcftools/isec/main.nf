@@ -13,8 +13,10 @@ process ISEC_VALIDATION {
     tuple val(meta), path("isec_out_{A,B}_${meta}/${meta}*{0000,0002,0003}.vcf.gz.tbi")    ,  emit: isec_vcf_indexes
     tuple val(meta), path("isec_out_A_${meta}/${meta}_A_0000.vcf.gz")                      ,  emit: isec_unique_sample_variants
     tuple val(meta), path("isec_out_B_${meta}/${meta}_B_0000.vcf.gz")                      ,  emit: isec_unique_truth_variants
-    tuple val(meta), path("isec_out_B_${meta}/${meta}_B_0003.vcf.gz")                      ,  emit: isec_concordant_sample
-    tuple val(meta), path("isec_out_B_${meta}/${meta}_B_0002.vcf.gz")                      ,  emit: isec_concordant_truth
+    tuple val(meta), path("isec_out_B_${meta}/${meta}_B_0003.vcf.gz")                      ,  emit: isec_concordant_sample_A
+    tuple val(meta), path("isec_out_B_${meta}/${meta}_B_0002.vcf.gz")                      ,  emit: isec_concordant_truth_A
+    tuple val(meta), path("isec_out_A_${meta}/${meta}_A_0002.vcf.gz")                      ,  emit: isec_concordant_sample_B
+    tuple val(meta), path("isec_out_A_${meta}/${meta}_A_0003.vcf.gz")                      ,  emit: isec_concordant_truth_B
     tuple val(meta), path("${meta}_variant_comparison_stats")                              ,  emit: isec_variant_comparison_stats
     path  "versions.yml"                                                                   ,  emit: versions
     
@@ -31,7 +33,9 @@ process ISEC_VALIDATION {
         && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${sample_vcf} ${truth_vcf} -p ${output1} \\
         && bcftools isec ${filter1_vcf} ${filter2_vcf} -T ${bed} ${truth_vcf} ${sample_vcf} -p ${output2} \\
         && cd ${output1} && mv 0000.vcf ${meta}_A_0000.vcf && mv 0001.vcf ${meta}_A_0001.vcf \\
+        && mv 0003.vcf ${meta}_A_0003.vcf && mv 0002.vcf ${meta}_A_0002.vcf \\
         && bgzip ${meta}_A_0000.vcf && tabix ${meta}_A_0000.vcf.gz && bgzip ${meta}_A_0001.vcf && tabix ${meta}_A_0001.vcf.gz  \\
+        && bgzip ${meta}_A_0002.vcf && tabix ${meta}_A_0002.vcf.gz && bgzip ${meta}_A_0003.vcf && tabix ${meta}_A_0003.vcf.gz \\
         && no_unique_sample_variants=\$(bcftools stats ${meta}_A_0000.vcf.gz  | grep -v "^#" | grep "number of records" | awk 'BEGIN{OFS="\\t"} {print \$6}') \\
         && avg_vaf_unique_sample_variants=\$(bcftools query -f '[%AF\\t%DP]\\n'  ${meta}_A_0000.vcf.gz | awk -F'\\t' '{sum+=\$1} END {print sum / NR}') &&  cd ../ \\
         && cd ${output2} && mv 0000.vcf ${meta}_B_0000.vcf && mv 0001.vcf ${meta}_B_0001.vcf \\

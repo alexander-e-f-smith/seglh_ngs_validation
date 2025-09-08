@@ -48,9 +48,9 @@ process BATCH_SENSITIVITY_SPECIFICITY {
       fi
     done
         
-    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join -l expt_sample_with_unique_variants -O z > batch_expt_unique_variants_only_samples_with_variants.vcf.gz
-    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join -l truth_sample_with_unique_variants -O z > batch_truth_unique_variants_only_samples_with_variants.vcf.gz && \\
-    tabix batch_truth_unique_variants_only_samples_with_variants.vcf.gz && tabix batch_expt_unique_variants_only_samples_with_variants.vcf.gz
+    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join -l expt_sample_with_unique_variants -O z > batch_expt_unique_variants_only_samples_with_variants.vcf.gz || true
+    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join -l truth_sample_with_unique_variants -O z > batch_truth_unique_variants_only_samples_with_variants.vcf.gz  || true  && \\
+    tabix batch_truth_unique_variants_only_samples_with_variants.vcf.gz || true && tabix batch_expt_unique_variants_only_samples_with_variants.vcf.gz || true
     
     
 
