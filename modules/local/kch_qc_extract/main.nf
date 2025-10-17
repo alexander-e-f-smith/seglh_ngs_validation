@@ -7,6 +7,7 @@ process EXTRACT_KCH_QC {
 
     input:
     tuple val(meta), path(QC_json), path(QC_json_truth), path(depth_file), path(depth_file_truth)
+    path(githead)
 
     output:
     tuple val(meta), path("${meta}_combined_consolidated_kch_qc")    ,  emit: sample_kch_qc
@@ -25,6 +26,8 @@ process EXTRACT_KCH_QC {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         jq: \$(jq --version 2>&1 |  sed 's/^.*Version: //g')
+        git: \$(head -1 ORIG_HEAD 2>&1  )
+        docker: \$(echo \$( grep 'docker run' .command.run 2>&1) )
     END_VERSIONS
 
     """

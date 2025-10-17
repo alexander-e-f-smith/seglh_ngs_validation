@@ -11,6 +11,7 @@ process COMBINE_KCH_QC {
     output:
     path("batch_kch_qc")
     path("*ggplot.pdf")
+    path  "versions.yml"                                             ,  emit: versions
     
     script:
     loess_smoothing_level = task.ext.args ?: '1'
@@ -27,10 +28,11 @@ process COMBINE_KCH_QC {
     ggplot_depth_vs_reads_2samplesets_with_duplication_by_size_july2025.R batch_kch_qc expt truth Truth_VAF_linearity_ $loess_smoothing_level $coverage_level $read_number_required    
     
 
-    #cat <<-END_VERSIONS > versions.yml
-    #"${task.process}":
-    #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
-    #END_VERSIONS
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        R: \$(R --version 2>&1 | head -c 15)
+        docker: \$(echo \$( grep 'docker run' .command.run 2>&1) )
+    END_VERSIONS
 
     """
 }

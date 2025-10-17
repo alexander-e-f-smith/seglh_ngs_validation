@@ -15,19 +15,22 @@ process BATCH_SENSITIVITY_SPECIFICITY {
     path("batch_*_unique_variants.vcf.gz*")
     path("batch_*_unique_variants_only_samples_with_variants.vcf.gz*") 
     path("batch_variant_compartison_stats")
+    path  "versions.yml"                                             ,  emit: versions
 
     script:
     def target = task.ext.args ?: ''
     def expected_data_source = task.ext.args2 ?: ''
     def observed_data_source = task.ext.args3 ?: ''
+    def info_tags_to_merge = task.ext.args4 ?: ''
+    def info_tags_to_print = task.ext.args5 ?: '' 
     
 
     """
-    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join $batch_sample_unique -O z > batch_exp_unique_variants.vcf.gz && \\
-    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join $batch_truth_unique -O z > batch_truth_unique_variants.vcf.gz && \\
+    bcftools merge -m none -i ${info_tags_to_merge} $batch_sample_unique -O z > batch_exp_unique_variants.vcf.gz && \\
+    bcftools merge -m none -i ${info_tags_to_merge} $batch_truth_unique -O z > batch_truth_unique_variants.vcf.gz && \\
     tabix batch_exp_unique_variants.vcf.gz && tabix batch_truth_unique_variants.vcf.gz  && \\
-    bcftools query -H  -f  '%CHROM\\t%POS\\t%REF\\t%ALT\\t%FILTER\\t[\\t%DP][\\t%AF][\\t%VD]\\t%INFO/MSI\\t%INFO/MSILEN\\t%INFO/QUAL\\t%INFO/NM\\t%INFO/MQ\\t%INFO/SN\\t%INFO/PMEAN\\t%INFO/LSEQ\\t%INFO/RSEQ\\n' batch_exp_unique_variants.vcf.gz > batch_exp_unique_variants.tsv && \\
-    bcftools query -H  -f '%CHROM\\t%POS\\t%REF\\t%ALT\\t%FILTER\\t[\\t%DP][\\t%AF][\\t%VD]\\t%INFO/MSI\\t%INFO/MSILEN\\t%INFO/QUAL\\t%INFO/NM\\t%INFO/MQ\\t%INFO/SN\\t%INFO/PMEAN\\t%INFO/LSEQ\\t%INFO/RSEQ\\n' batch_truth_unique_variants.vcf.gz > batch_truth_unique_variants.tsv
+    bcftools query -H  -f  '%CHROM\\t%POS\\t%REF\\t%ALT\\t%FILTER\\t[\\t%DP][\\t%AF][\\t%AD{1}]${info_tags_to_print}\\n' batch_exp_unique_variants.vcf.gz > batch_exp_unique_variants.tsv && \\
+    bcftools query -H  -f  '%CHROM\\t%POS\\t%REF\\t%ALT\\t%FILTER\\t[\\t%DP][\\t%AF][\\t%AD{1}]${info_tags_to_print}\\n' batch_truth_unique_variants.vcf.gz > batch_truth_unique_variants.tsv
     cat $batch_variant_stats | sed '2,\${/^Sample/d}' - > batch_variant_compartison_stats
     
     touch expt_sample_with_unique_variants
@@ -48,16 +51,17 @@ process BATCH_SENSITIVITY_SPECIFICITY {
       fi
     done
         
-    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join -l expt_sample_with_unique_variants -O z > batch_expt_unique_variants_only_samples_with_variants.vcf.gz || true
-    bcftools merge -m none -i DP:join,VD:join,AF:join,MQ:join,QUAL:join,NM:join,MSI:join,MSILEN:join,SN:join,PMEAN:join -l truth_sample_with_unique_variants -O z > batch_truth_unique_variants_only_samples_with_variants.vcf.gz  || true  && \\
+    bcftools merge -m none -i ${info_tags_to_merge} -l expt_sample_with_unique_variants -O z > batch_expt_unique_variants_only_samples_with_variants.vcf.gz || true
+    bcftools merge -m none -i ${info_tags_to_merge} -l truth_sample_with_unique_variants -O z > batch_truth_unique_variants_only_samples_with_variants.vcf.gz  || true  && \\
     tabix batch_truth_unique_variants_only_samples_with_variants.vcf.gz || true && tabix batch_expt_unique_variants_only_samples_with_variants.vcf.gz || true
     
     
 
-    #cat <<-END_VERSIONS > versions.yml
-    #"${task.process}":
-    #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
-    #END_VERSIONS
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
+        docker: \$(echo \$( grep 'docker run' .command.run 2>&1) )
+    END_VERSIONS
 
     """
 

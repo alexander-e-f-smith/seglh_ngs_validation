@@ -48,9 +48,11 @@ process ISEC_VALIDATION {
         && printf "Sample\\tNumber_unique_sample_variants\\tAvg_VAF_uniq_sample_variants\\tNumber_unique_truth_variants\\tAvg_VAF_uniq_truth_variants\\tNumber_concordant_variants\\n" | tee -a ${meta}_variant_comparison_stats \\
         && printf  "${meta}\\t\$no_unique_sample_variants\\t\$avg_vaf_unique_sample_variants\\t\$no_unique_truth_variants\\t\$avg_vaf_unique_truth_variants\\t\$no_concordant_variants\\n" | tee -a  ${meta}_variant_comparison_stats
 
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
+        docker: \$(echo \$( grep 'docker run' .command.run 2>&1) )
     END_VERSIONS
     """
 }

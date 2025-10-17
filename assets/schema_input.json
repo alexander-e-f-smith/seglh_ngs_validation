@@ -61,7 +61,21 @@
                 "exists": true,
                 "pattern": "^\\S+$",
                 "errorMessage": "kch pipeline coverage output for truth experiments; optional -check samplesheet fomatting"
-            }
+            },
+            "cnv_bed": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.bed$",
+                "errorMessage": "sample cnvs in bed format - tested for cnvkit converted files currently; optional - check samplesheet fomatting"
+            },
+            "truth_cnv_bed": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.bed$",
+                "errorMessage": "truth cnvs in bed format - tested for cnvkit converted files currently; optional - check samplesheet fomatting"
+            },
         },
         "required": ["sample", "sample_vcf", "truth_vcf"]
     }

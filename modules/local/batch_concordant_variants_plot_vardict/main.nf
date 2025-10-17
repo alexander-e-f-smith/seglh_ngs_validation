@@ -17,6 +17,7 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     path("batch_sample_concordant_variants_{A,B}.tsv")             , emit: batch_sample_concordant_merged_tsv
     path("batch_truth_concordant_{A,B}_merge.vcf.gz")              , emit: batch_truth_concordant_merged_vcf
     path("*_correlation.pdf")                                      , emit: batch_correlation_pdfs
+    path  "versions.yml"                                           ,  emit: versions
 
     script:
     def target = task.ext.args ?: ''
@@ -27,10 +28,10 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     """
     ## merge input vcfs by catagory (truth vs test) and isec analysis type
     bcftools merge -m none $batch_sample_concordant_A -O z > batch_sample_concordant_A_merge.vcf.gz && \\
-    bcftools query -H -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t]\\n'  batch_sample_concordant_A_merge.vcf.gz  >  batch_sample_concordant_variants_A.tsv 
+    bcftools query -H -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%AD{1}\\t%DP\\t]\\n'  batch_sample_concordant_A_merge.vcf.gz  >  batch_sample_concordant_variants_A.tsv 
     bcftools merge -m none $batch_truth_concordant_A -O z > batch_truth_concordant_A_merge.vcf.gz
     bcftools merge -m none $batch_sample_concordant_B -O z > batch_sample_concordant_B_merge.vcf.gz && \\
-    bcftools query -H -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t]\\n'  batch_sample_concordant_B_merge.vcf.gz  >  batch_sample_concordant_variants_B.tsv
+    bcftools query -H -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%AD{1}\\t%DP\\t]\\n'  batch_sample_concordant_B_merge.vcf.gz  >  batch_sample_concordant_variants_B.tsv
     bcftools merge -m none $batch_truth_concordant_B -O z > batch_truth_concordant_B_merge.vcf.gz    
 
     ##generate header column variables 
@@ -41,7 +42,7 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     for file in $batch_sample_concordant_A
     do
         id=\$(basename \$file .vcf.gz)
-        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 >  \${id}_batch_sample_concordant_variants_A.tsv
+        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%AD{1}\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 >  \${id}_batch_sample_concordant_variants_A.tsv
     done
     echo -e \$head | tee -a batch_sample_concordant_variants_A_headed.tsv > /dev/null && \\
     cat *_batch_sample_concordant_variants_A.tsv  | tee -a batch_sample_concordant_variants_A_headed.tsv > /dev/null
@@ -49,7 +50,7 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     for file in $batch_truth_concordant_A
     do
         id=\$(basename \$file .vcf.gz)
-        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 > \${id}_batch_truth_concordant_variants_A.tsv
+        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%AD{1}\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 > \${id}_batch_truth_concordant_variants_A.tsv
     done
     echo -e \$headtruth | tee -a batch_truth_concordant_variants_A_headed.tsv > /dev/null && \\
     cat *_batch_truth_concordant_variants_A.tsv | tee -a batch_truth_concordant_variants_A_headed.tsv > /dev/null && \\
@@ -60,7 +61,7 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     for file in $batch_sample_concordant_B
     do
         id=\$(basename \$file .vcf.gz)
-        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 >  \${id}_batch_sample_concordant_variants_B.tsv
+        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%AD{1}\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 >  \${id}_batch_sample_concordant_variants_B.tsv
     done
     echo -e \$head | tee -a batch_sample_concordant_variants_B_headed.tsv > /dev/null && \\
     cat *_batch_sample_concordant_variants_B.tsv  | tee -a batch_sample_concordant_variants_B_headed.tsv > /dev/null
@@ -68,7 +69,7 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     for file in $batch_truth_concordant_B
     do
         id=\$(basename \$file .vcf.gz)
-        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%VD\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 > \${id}_batch_truth_concordant_variants_B.tsv
+        bcftools query -f '%CHROM\\t%POS\\tend\\t%REF\\t%ALT\\t[%AF\\t%AD{1}\\t%DP\\t%SAMPLE]\\t%FILTER\\n'  \${file} | sort -n -k1 -k2 > \${id}_batch_truth_concordant_variants_B.tsv
     done
     echo -e \$headtruth | tee -a batch_truth_concordant_variants_B_headed.tsv > /dev/null && \\
     cat *_batch_truth_concordant_variants_B.tsv | tee -a batch_truth_concordant_variants_B_headed.tsv > /dev/null && \\
@@ -83,10 +84,13 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_B ${observed_data_source}_B batch 1 1
     correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict Variant_depth VD exp_VD ${expected_data_source}_B ${observed_data_source}_B batch 5000 5000
     correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict Depth_at_variant_loci DP exp_DP ${expected_data_source}_B ${observed_data_source}_B batch 10000 10000
-    #cat <<-END_VERSIONS > versions.yml
-    #"${task.process}":
-    #    bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
-    #END_VERSIONS
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')
+        R: \$(R --version 2>&1 | head -c 15)
+        docker: \$(echo \$( grep 'docker run' .command.run 2>&1) )
+    END_VERSIONS
 
     """
 
