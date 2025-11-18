@@ -17,12 +17,12 @@
 
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23seglhqiaseq-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/seglhqiaseq)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
-## Introduction
+# Introduction
 
 **seglh_ngs_validation** is a bioinformatics pipeline for validation of NGS assays:
 - currently the pipleine is configured around Synnovis/SEGLH(KCH) NGS pipelines and the specific outputs therein.
 
-# Input
+## Input
 
 1. The pipeline requires at least VCF files to compare as a minimum; one VCF from the pipleine to be validated and another in a compatible format to use a the 'truth' to compare against (usually from the same variant caller)
 2. Optional input  files and include (and should be paired apart from QC file, where pairing is optional):
@@ -30,27 +30,30 @@
    - Bed file output for cnv calls (currently using that outputted by cnvkit)
    - Coverage file (exoncoverage) as outputted by kch/DX pipelines
 3. A yaml file for custom run configuration parameters (see yaml file configuration below)
-4. Samplesheet.csv detailing input files including PATHS (see below for details).
+4. `Samplesheet.csv` detailing input files including PATHS (see below for details).
 
-# Yaml configuration file 
-example of yaml format
+## Yaml configuration file 
+example of yaml format:
+  ```
+  pipeline_name : "generic" 
+  pipeline_base : "generic"
+  isec_filter_bed_rp : "resources/dna_mm/dna_mm_roi_305genes.bed" 
+  isec_exclude_filter_1 : "-e 'FORMAT/AF<0.05'" 
+  isec_exclude_filter_2 : "-e 'FORMAT/AF<0.02'" 
+  cnv_loci_of_interest_bed : "resources/dna_mm/dna_mm_solid_cnvkit_loci_of_interest.bed" 
+  expected_data_source : "truth_data" 
+  observed_data_source : "test_data" 
+  snappy_qc_run : "yes"
+  cnvkit_compare_run : "yes" 
+  info_tags_to_merge : "DP:join,AF:join" 
+  info_tags_to_print : "" 
+  githead_rp : ".git/ORIG_HEAD" 
+  qc_standalone : "no" 
+  ```
+Yaml options:
 
-| pipeline_name : "generic"|
-| pipeline_base : "generic"|
-| isec_filter_bed_rp : "resources/dna_mm/dna_mm_roi_305genes.bed" |
-| isec_exclude_filter_1 : "-e 'FORMAT/AF<0.05'" |
-| isec_exclude_filter_2 : "-e 'FORMAT/AF<0.02'" |
-| cnv_loci_of_interest_bed : "resources/dna_mm/dna_mm_solid_cnvkit_loci_of_interest.bed" |
-| expected_data_source : "truth_data" |
-| observed_data_source : "test_data" |
-| snappy_qc_run : "yes" |
-| cnvkit_compare_run : "yes" |
-| info_tags_to_merge : "DP:join,AF:join" |
-| info_tags_to_print : "" |
-| githead_rp : ".git/ORIG_HEAD" |
-| qc_standalone : "no" |
-
-
+| Option | Detail | Example |
+| isec_filter_bed_rp | target regions (bed) being assessed  | resources/test/test.bed |
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
