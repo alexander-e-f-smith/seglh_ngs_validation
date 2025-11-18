@@ -53,6 +53,7 @@ example of yaml format:
 Yaml options:
 
 | Option | Detail | Example |
+| --- | --- | --- | 
 | isec_filter_bed_rp | target regions (bed) being assessed  | resources/test/test.bed |
 
 <!-- TODO nf-core:
