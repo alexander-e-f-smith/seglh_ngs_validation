@@ -35,20 +35,20 @@
 # Yaml configuration file 
 example of yaml format
 
-| pipeline_name : "generic"
-pipeline_base : "generic"
-isec_filter_bed_rp : "resources/dna_mm/dna_mm_roi_305genes.bed"
-isec_exclude_filter_1 : "-e 'FORMAT/AF<0.05'"
-isec_exclude_filter_2 : "-e 'FORMAT/AF<0.02'"
-cnv_loci_of_interest_bed : "resources/dna_mm/dna_mm_solid_cnvkit_loci_of_interest.bed"
-expected_data_source : "truth_data"
-observed_data_source : "test_data"
-snappy_qc_run : "yes"
-cnvkit_compare_run : "yes"
-info_tags_to_merge : "DP:join,AF:join"
-info_tags_to_print : ""
-githead_rp : ".git/ORIG_HEAD"
-qc_standalone : "no" |
+| pipeline_name : "generic"|
+| pipeline_base : "generic"|
+| isec_filter_bed_rp : "resources/dna_mm/dna_mm_roi_305genes.bed" |
+| isec_exclude_filter_1 : "-e 'FORMAT/AF<0.05'" |
+| isec_exclude_filter_2 : "-e 'FORMAT/AF<0.02'" |
+| cnv_loci_of_interest_bed : "resources/dna_mm/dna_mm_solid_cnvkit_loci_of_interest.bed" |
+| expected_data_source : "truth_data" |
+| observed_data_source : "test_data" |
+| snappy_qc_run : "yes" |
+| cnvkit_compare_run : "yes" |
+| info_tags_to_merge : "DP:join,AF:join" |
+| info_tags_to_print : "" |
+| githead_rp : ".git/ORIG_HEAD" |
+| qc_standalone : "no" |
 
 
 
