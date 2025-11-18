@@ -75,15 +75,15 @@ workflow PIPELINE_INITIALISATION {
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map {
-            meta, vcf1, vcf2, variant_vcf, json, truth_json, exon_cov, truth_exon_cov ->
+            meta, vcf1, vcf2, variant_vcf, json, truth_json, exon_cov, truth_exon_cov, cnv_bed, truth_cnv_bed ->
                 if (vcf2) {
-                    return  [ meta.id, vcf1, vcf2, variant_vcf, json, truth_json, exon_cov, truth_exon_cov ]
+                    return  [ meta.id, vcf1, vcf2, variant_vcf, json, truth_json, exon_cov, truth_exon_cov, cnv_bed, truth_cnv_bed ]
                 }
         }
         .groupTuple() 
         .map {
-            meta, vcf1, vcf2, variant_vcf, json, truth_json, exon_cov, truth_exon_cov ->
-                return [ meta, vcf1, vcf2, variant_vcf.flatten(), json, truth_json.flatten(), exon_cov.flatten(), truth_exon_cov.flatten() ]
+            meta, vcf1, vcf2, variant_vcf, json, truth_json, exon_cov, truth_exon_cov, cnv_bed, truth_cnv_bed->
+                return [ meta, vcf1, vcf2, variant_vcf.flatten(), json, truth_json.flatten(), exon_cov.flatten(), truth_exon_cov.flatten(), cnv_bed.flatten(), truth_cnv_bed.flatten() ]
         }
         .set { ch_samplesheet }
     emit:

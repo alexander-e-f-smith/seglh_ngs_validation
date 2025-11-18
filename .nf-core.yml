@@ -5,14 +5,14 @@ org_path: null
 repository_type: pipeline
 template:
   author: Alexander Smith
-  description: Somatic pipeline for Qiagen Qiaseq assays run in SEGLH NHS labs
+  description: validation workflow for kch pipelines run in SEGLH NHS labs
   force: true
   is_nfcore: true
   name: seglhqiaseq
   org: nf-core
   outdir: .
   skip_features: []
-  version: 1.0.0dev
+  version: dev-commit-9bc7665
 update: null
 #https://github.com/nf-core/modules.git:
 #    nf-core:

@@ -47,6 +47,12 @@
                     "description": "path to shared resources. Need to specifiy DX project",
                     "help_text": "for local running path provide full path to run fastq dir eg -- pipeline_resources /home/work/nextflow_pipelines/validation_pipeline",
                     "fa_icon": "fas fa-folder-open"
+                },
+                "pipeline_name": {
+                    "type": "string",
+                    "description": "name of pipeline specific workflow - eg mgp4, currently not used",
+                    "help_text": "specify in yaml file of parameters supplied at run time for pipeline-workflow specific config/options",
+                    "fa_icon": "fas fa-file-pipeline_name"
                 }
             }
         },
@@ -228,17 +234,17 @@
                 }
             }
         },
-        "read_processing_options": {
-            "title": "Fastq processing options",
+        "pipeline_config_options": {
+            "title": "configuration options",
             "type": "object",
             "description": "Options for processing fastq reads prior to alignment",
             "default": "",
             "properties": {
-                "qiagen_adapters": {
+                "pipeline_name": {
                     "type": "string",
-                    "fa_icon": "fas fa-clip",
-                    "description": "Text file containing fasta sequences (eg illumina and qiagen adapter sequences) to clip",
-                    "help_text": "See illumina and qiagen kit information; plus screen fastq sequences directly"
+                    "description": "name of pipeline specific workflow - eg mgp4, currently not used",
+                    "help_text": "specify in yaml file of parameters supplied at run time for pipeline-workflow specific config/options",
+                    "fa_icon": "fas fa-file-pipeline_name"
                 }
             }
         }
@@ -257,7 +263,7 @@
             "$ref": "#/$defs/generic_options"
         },
         {
-            "$ref": "#/$defs/read_processing_options"
+            "$ref": "#/$defs/pipeline_config_options"
         }
     ],
     "properties": {

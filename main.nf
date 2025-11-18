@@ -40,10 +40,11 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
+
 workflow NFCORE_SEGLHQIASEQ {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    ch_samplesheet // channel: samplesheet read in from --input
 
     main:
 
@@ -51,11 +52,12 @@ workflow NFCORE_SEGLHQIASEQ {
     // WORKFLOW: Run pipeline
     //
     SEGLHQIASEQ (
-        samplesheet
+        ch_samplesheet
     )
     emit:
     multiqc_report = SEGLHQIASEQ.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
