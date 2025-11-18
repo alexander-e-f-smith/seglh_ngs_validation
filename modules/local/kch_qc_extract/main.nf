@@ -10,19 +10,37 @@ process EXTRACT_KCH_QC {
     path(githead)
 
     output:
-    tuple val(meta), path("${meta}_combined_consolidated_kch_qc")    ,  emit: sample_kch_qc
+    tuple val(meta), path("${meta}_consolidated_kch_qc_out")         ,  emit: sample_kch_qc
     path  "versions.yml"                                             ,  emit: versions
     
     script:
     coverage_settings = task.ext.args ?: ''
+    
+
+    //run with truth comparison or stand-alone
+    if (params.qc_standalone == "yes")
+    """
+    test1.sh ${QC_json} ${depth_file} ${meta}_consolidated_kch_qc obs && \
+    
+    cp ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_out
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        jq: \$(jq --version 2>&1 |  sed 's/^.*Version: //g')
+        git: \$(head -1 ORIG_HEAD 2>&1  )
+        docker: \$(echo \$( grep 'docker run' .command.run 2>&1) )
+    END_VERSIONS
 
     """
-    test1.sh ${QC_json} ${depth_file} ${meta}_consolidated_kch_qc obs
     
-    test1.sh ${QC_json_truth} ${depth_file_truth} ${meta}_consolidated_kch_qc_truth exp
+    else
+    """
+    test1.sh ${QC_json} ${depth_file} ${meta}_consolidated_kch_qc obs && \
 
-    paste -d "\\t" ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_truth |  tee -a ${meta}_combined_consolidated_kch_qc > /dev/null
-    
+    test1.sh ${QC_json_truth} ${depth_file_truth} ${meta}_consolidated_kch_qc_truth exp && \
+
+    paste -d "\\t" ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_truth |  tee -a ${meta}_consolidated_kch_qc_out > /dev/null
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         jq: \$(jq --version 2>&1 |  sed 's/^.*Version: //g')

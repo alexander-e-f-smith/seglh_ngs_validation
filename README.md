@@ -19,7 +19,38 @@
 
 ## Introduction
 
-**nf-core/seglhqiaseq** is a bioinformatics pipeline that ...
+**seglh_ngs_validation** is a bioinformatics pipeline for validation of NGS assays:
+- currently the pipleine is configured around Synnovis/SEGLH(KCH) NGS pipelines and the specific outputs therein.
+
+# Input
+
+1. The pipeline requires at least VCF files to compare as a minimum; one VCF from the pipleine to be validated and another in a compatible format to use a the 'truth' to compare against (usually from the same variant caller)
+2. Optional input  files and include (and should be paired apart from QC file, where pairing is optional):
+   - QC metrics file in json format (currently only supported for KCH/SEGLH snappy/DX based pipelines; can be supplied as single test file or with paired truth for comparison. This QC operation can be switched off via yaml config file sup[plied at run time (see belpW. Also whether a single of paired comparison is required is also specified via the yaml config file.
+   - Bed file output for cnv calls (currently using that outputted by cnvkit)
+   - Coverage file (exoncoverage) as outputted by kch/DX pipelines
+3. A yaml file for custom run configuration parameters (see yaml file configuration below)
+4. Samplesheet.csv detailing input files including PATHS (see below for details).
+
+# Yaml configuration file 
+example of yaml format
+
+| pipeline_name : "generic"
+pipeline_base : "generic"
+isec_filter_bed_rp : "resources/dna_mm/dna_mm_roi_305genes.bed"
+isec_exclude_filter_1 : "-e 'FORMAT/AF<0.05'"
+isec_exclude_filter_2 : "-e 'FORMAT/AF<0.02'"
+cnv_loci_of_interest_bed : "resources/dna_mm/dna_mm_solid_cnvkit_loci_of_interest.bed"
+expected_data_source : "truth_data"
+observed_data_source : "test_data"
+snappy_qc_run : "yes"
+cnvkit_compare_run : "yes"
+info_tags_to_merge : "DP:join,AF:join"
+info_tags_to_print : ""
+githead_rp : ".git/ORIG_HEAD"
+qc_standalone : "no" |
+
+
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
@@ -31,8 +62,6 @@
      workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
 ## Usage
 
@@ -42,28 +71,30 @@
 <!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
      Explain what rows and columns represent. For instance (please edit as appropriate):
 
-First, prepare a samplesheet with your input data that looks as follows:
+First, prepare a samplesheet with your input data that looks as follows (for example purposes):
 
-`samplesheet.csv`:
+`samplesheet_example.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,sample_vcf,truth_vcf,variant_vcf,json,truth_json,exon_cov,truth_exon_cov,cnv_bed,truth_cnv_bed
+CONTROL_REP1,AEG588A1_S1.filtered.vcf.gz ,AEG588A1_S1_filtered.vcf.gz,,,,,,,
 ```
 
 Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
 
 -->
 
-Now, you can run the pipeline using:
+Now, you can run the pipeline using this example (:
 
 <!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
-nextflow run nf-core/seglhqiaseq \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+nextflow run main.nf  
+   -profile docker,qiaseq 
+   --outdir example_test1  
+   --input samplesheet_example.csv 
+   -params-file pipeline_params/generic.yaml  
+   --pipeline_resources "/home/seglh_ngs_validation/"
 ```
 
 > [!WARNING]
