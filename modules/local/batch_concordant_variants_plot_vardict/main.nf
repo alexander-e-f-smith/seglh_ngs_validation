@@ -23,7 +23,7 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
     def target = task.ext.args ?: ''
     def expected_data_source = task.ext.args2 ?: ''
     def observed_data_source = task.ext.args3 ?: ''
-    
+    def plot_depth = task.ext.args4 ?: ''
 
     """
     ## merge input vcfs by catagory (truth vs test) and isec analysis type
@@ -76,15 +76,20 @@ process BATCH_CONCORDANT_VARIANTS_PLOTTING_VARDICT {
 
     paste -d '\\t' batch_sample_concordant_variants_B_headed.tsv batch_truth_concordant_variants_B_headed.tsv  > batch_combined_concordant_variants_B_headed.tsv && \\
 
+    if [[  $plot_depth == "yes" ]]; then
     ##plot expected vs truth vafs/VDs/depths with regression line and peason correlation calculations
      
-    correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_A ${observed_data_source}_A batch 1 1
-    correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict Variant_depth VD exp_VD ${expected_data_source}_A ${observed_data_source}_A batch 5000 5000
-    correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict Depth_at_variant_loci DP exp_DP ${expected_data_source}_A ${observed_data_source}_A batch 10000 10000
-    correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_B ${observed_data_source}_B batch 1 1
-    correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict Variant_depth VD exp_VD ${expected_data_source}_B ${observed_data_source}_B batch 5000 5000
-    correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict Depth_at_variant_loci DP exp_DP ${expected_data_source}_B ${observed_data_source}_B batch 10000 10000
-
+      correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_A ${observed_data_source}_A batch 1 1
+      correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict Variant_depth VD exp_VD ${expected_data_source}_A ${observed_data_source}_A batch 5000 5000
+      correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict Depth_at_variant_loci DP exp_DP ${expected_data_source}_A ${observed_data_source}_A batch 10000 10000
+      correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_B ${observed_data_source}_B batch 1 1
+      correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict Variant_depth VD exp_VD ${expected_data_source}_B ${observed_data_source}_B batch 5000 5000
+      correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict Depth_at_variant_loci DP exp_DP ${expected_data_source}_B ${observed_data_source}_B batch 10000 10000
+    else
+      correlation.R batch_combined_concordant_variants_A_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_A ${observed_data_source}_A batch 1 1
+      correlation.R batch_combined_concordant_variants_B_headed.tsv Vardict VAF AF exp_AF ${expected_data_source}_B ${observed_data_source}_B batch 1 1
+    fi
+   
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools 2>&1 | grep Version | sed 's/^.*Version: //g' |  sed 's/ /_/g')

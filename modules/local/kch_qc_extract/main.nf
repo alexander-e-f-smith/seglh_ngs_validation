@@ -12,9 +12,11 @@ process EXTRACT_KCH_QC {
     output:
     tuple val(meta), path("${meta}_consolidated_kch_qc_out")         ,  emit: sample_kch_qc
     path  "versions.yml"                                             ,  emit: versions
+    tuple val(meta), env(norm_index)                                 ,  optional:true      ,  emit: norm_index
     
     script:
     coverage_settings = task.ext.args ?: ''
+    manual_expected_reads = task.ext.args2 ?: ''
     
 
     //run with truth comparison or stand-alone
@@ -23,6 +25,8 @@ process EXTRACT_KCH_QC {
     test1.sh ${QC_json} ${depth_file} ${meta}_consolidated_kch_qc obs && \
     
     cp ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_out
+
+    norm_index=\$(awk -v var=${manual_expected_reads} -F'\\t' ' NR>1 {print \$4/var}' ${meta}_consolidated_kch_qc_out)
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -39,7 +43,9 @@ process EXTRACT_KCH_QC {
 
     test1.sh ${QC_json_truth} ${depth_file_truth} ${meta}_consolidated_kch_qc_truth exp && \
 
-    paste -d "\\t" ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_truth |  tee -a ${meta}_consolidated_kch_qc_out > /dev/null
+    paste -d "\\t" ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_truth |  tee -a ${meta}_consolidated_kch_qc_out > /dev/null && \
+    
+    norm_index=\$(awk -F'\\t' ' NR>1 {print \$4/\$21}' ${meta}_consolidated_kch_qc_out)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
