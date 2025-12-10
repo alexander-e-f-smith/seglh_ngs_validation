@@ -82,7 +82,7 @@ First, prepare a samplesheet with your input data that looks as follows (for exa
 
 ```csv
 sample,sample_vcf,truth_vcf,variant_vcf,json,truth_json,exon_cov,truth_exon_cov,cnv_bed,truth_cnv_bed
-CONTROL_REP1,/path/to/AEG588A1_S1.filtered.vcf.gz ,/path/to/AEG588A1_S1_filtered.vcf.gz,,,,,,,
+CONTROL_REP1,/path/to/Sample1_test.filtered.vcf.gz ,/path/to/Sample1_truth_filtered.vcf.gz,,,,,,,
 ```
 
 Each row represents a sample and associted pipeline output files, where there is an option for a test and paired truth associated file for each file type (paired tructh and test required for variant vcf file input) .
