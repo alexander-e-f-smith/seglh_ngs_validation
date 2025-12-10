@@ -25,11 +25,12 @@
 ## Input
 
 1. The pipeline requires at least VCF files to compare as a minimum; one VCF from the pipleine to be validated and another in a compatible format to use a the 'truth' to compare against (usually from the same variant caller)
-2. Optional input  files and include (and should be paired apart from QC file, where pairing is optional):
+2. Optional input  files  include (and should be paired for variant vcf and cnvkit bed file if cnv assessment is selected. pairing of other files is optional):
    - QC metrics file in json format (currently only supported for KCH/SEGLH snappy/DX based pipelines; can be supplied as single test file or with paired truth for comparison. This QC operation can be switched off via yaml config file sup[plied at run time (see belpW. Also whether a single of paired comparison is required is also specified via the yaml config file.
    - Bed file output for cnv calls (currently using that outputted by cnvkit)
    - Coverage file (exoncoverage) as outputted by kch/DX pipelines
-3. A yaml file for custom run configuration parameters (see yaml file configuration below)
+   - CNVkit output files (in bed format; see cnvkit manual for details of bed conversion)
+3. A yaml file for custom run configuration parameters (see yaml file configuration below). This contains options to run with paired or unpaired inputs if optional (see above)
 4. `Samplesheet.csv` detailing input files including PATHS (see below for details).
 
 ## Yaml configuration file 
@@ -74,19 +75,18 @@ Yaml options:
 
 <!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
      Explain what rows and columns represent. For instance (please edit as appropriate):
-
+-->
 First, prepare a samplesheet with your input data that looks as follows (for example purposes):
 
 `samplesheet_example.csv`:
 
 ```csv
 sample,sample_vcf,truth_vcf,variant_vcf,json,truth_json,exon_cov,truth_exon_cov,cnv_bed,truth_cnv_bed
-CONTROL_REP1,AEG588A1_S1.filtered.vcf.gz ,AEG588A1_S1_filtered.vcf.gz,,,,,,,
+CONTROL_REP1,/path/to/AEG588A1_S1.filtered.vcf.gz ,/path/to/AEG588A1_S1_filtered.vcf.gz,,,,,,,
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+Each row represents a sample and associted pipeline output files, where there is an option for a test and paired truth associated file for each file type (paired tructh and test required for variant vcf file input) .
 
--->
 
 Now, you can run the pipeline using this example (:
 
@@ -96,7 +96,7 @@ Now, you can run the pipeline using this example (:
 nextflow run main.nf  
    -profile docker,qiaseq 
    --outdir example_test1  
-   --input samplesheet_example.csv 
+   --input assets/samplesheet_example.csv 
    -params-file pipeline_params/generic.yaml  
    --pipeline_resources "/home/seglh_ngs_validation/"
 ```
