@@ -1,32 +1,18 @@
 <h1>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nf-core-seglhqiaseq_logo_dark.png">
-    <img alt="nf-core/seglhqiaseq" src="docs/images/nf-core-seglhqiaseq_logo_light.png">
-  </picture>
+  SEGLH NGS Validation Workflow
 </h1>
-
-[![GitHub Actions CI Status](https://github.com/nf-core/seglhqiaseq/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/seglhqiaseq/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/seglhqiaseq/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/seglhqiaseq/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/seglhqiaseq/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
-
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
-[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
-[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/seglhqiaseq)
-
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23seglhqiaseq-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/seglhqiaseq)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 # Introduction
 
 **seglh_ngs_validation** is a bioinformatics pipeline for validation of NGS assays:
 - currently the pipleine is configured around Synnovis/SEGLH(KCH) NGS pipelines and the specific outputs therein.
+- currently this workflow will only successfully run using Nextflow 24.04.4
 
 ## Input
 
-1. The pipeline requires at least VCF files to compare as a minimum; one VCF from the pipleine to be validated and another in a compatible format to use a the 'truth' to compare against (usually from the same variant caller)
-2. Optional input  files  include (and should be paired for variant vcf and cnvkit bed file if cnv assessment is selected. pairing of other files is optional):
-   - QC metrics file in json format (currently only supported for KCH/SEGLH snappy/DX based pipelines; can be supplied as single test file or with paired truth for comparison. This QC operation can be switched off via yaml config file sup[plied at run time (see belpW. Also whether a single of paired comparison is required is also specified via the yaml config file.
+1. The pipeline requires at least VCF files to compare as a minimum; one VCF from the pipleine to be validated and another in a compatible format to use as the 'truth' to compare against (usually from the same variant caller)
+2. Optional input files include (and should be paired for variant vcf and cnvkit bed file if cnv assessment is selected. pairing of other files is optional):
+   - QC metrics file in json format (currently only supported for KCH/SEGLH snappy/DX based pipelines; can be supplied as single test file or with paired truth for comparison. This QC operation can be switched off via yaml config file supplied at run time see below.) Also whether a single or paired comparison is required is also specified via the yaml config file.
    - Bed file output for cnv calls (currently using that outputted by cnvkit)
    - Coverage file (exoncoverage) as outputted by kch/DX pipelines
    - CNVkit output files (in bed format; see cnvkit manual for details of bed conversion)
@@ -56,6 +42,13 @@ Yaml options:
 | Option | Detail | Example |
 | --- | --- | --- | 
 | isec_filter_bed_rp | target regions (bed) being assessed  | resources/test/test.bed |
+| isec_exclude_filter_1 | AF thresholds to exclude on sample vcf  | "-e 'FORMAT/AF<0.05'" |
+| isec_exclude_filter_2 | AF thresholds to exclude on truth vcf  | "-e 'FORMAT/AF<0.05'" |
+| cnv_loci_of_interest_bed | target regions (bed) being assessed for CNVs  | resources/test/cnvkit_loci_of_interest.bed |
+| cnvkit_compare_run | Boolean for applying cnv analysis  | "yes" |
+| expected_data_source | Truth Data Name (For Graph Visuals)  | "Truth Data" |
+| observed_data_source | Validation Data Name (For Graph Visuals) | "Validation Data" |
+
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
@@ -67,16 +60,40 @@ Yaml options:
      workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
+## Generating Samplesheet
+
+The Samplesheet needed for this workflow can be generated using the `assets/samplesheet_generatory.py` script as follows:
+
+```python
+python3 assets/samplesheet_generator.py \
+    -truth_set {filepath to truth dataset} \
+    -exp_set {filepath to experimental dataset} \
+    -output {complete filepath & name to output samplesheet}
+```
+The truth and experimental datasets structure should be a parent folder of the dataset and then a folder inside for each filetype to provide. For example:
+```
+Truth_Data_Set Folder
+├── truth_json
+│   └── *.json
+├── truth_cnvs
+│   └── *cnv_call_baf_postFilter.bed
+├── truth_exoncov
+│   └── *exoncoverage_metrics
+└── truth_vcfs
+    └── *.vcf.gz
+```
+
+This generator currently does not automatically import the variant vcf option, this will need to be added manually.
 
 ## Usage
 
-> [!NOTE]
-> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+Currently, this workflow will only work using **Nextflow 24.04.4**. Any later versions will not work.
+
 
 <!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
      Explain what rows and columns represent. For instance (please edit as appropriate):
 -->
-First, prepare a samplesheet with your input data that looks as follows (for example purposes):
+First, prepare a samplesheet with your input data by using the instructions above. If samplesheet needs to be made manually, make sure that it looks as follows (for example purposes):
 
 `samplesheet_example.csv`:
 
@@ -85,12 +102,10 @@ sample,sample_vcf,truth_vcf,variant_vcf,json,truth_json,exon_cov,truth_exon_cov,
 CONTROL_REP1,/path/to/Sample1_test.filtered.vcf.gz ,/path/to/Sample1_truth_filtered.vcf.gz,,,,,,,
 ```
 
-Each row represents a sample and associted pipeline output files, where there is an option for a test and paired truth associated file for each file type (paired tructh and test required for variant vcf file input) .
+Each row represents a sample and associated pipeline output files, where there is an option for a test and paired truth associated file for each file type (paired truth and test required for variant vcf file input).
 
 
-Now, you can run the pipeline using this example (:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+Now, you can run the pipeline using this example:
 
 ```bash
 nextflow run main.nf  
@@ -102,19 +117,32 @@ nextflow run main.nf
 ```
 
 > [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Multiple pipeline parameters files exist at `pipeline_params/`.
+Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/seglhqiaseq/usage) and the [parameter documentation](https://nf-co.re/seglhqiaseq/parameters).
 
 ## Pipeline output
 
-To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/seglhqiaseq/results) tab on the nf-core website pipeline page.
-For more details about the output files and reports, please refer to the
-[output documentation](https://nf-co.re/seglhqiaseq/output).
+This pipeline produces results that analyse concordance and specificity between the two data sets.
+### Concordance results 
+  - contains all variants seen in the same sample in both data sets alongside other key metrics (AF, Depth, norm Depth)
+  - contains visual graphs to compare variant loci depth and VAF frequency
+  - merged vcfs containing all concordant variants
+### Specificity results
+  - list of unique variants from either data set and other key metrics (AF, Depth, MSI, Up/Down steam sequence)
+  - overall sample statistics on unique variants seen in each sample
+  - merged vcfs containing samples with unique variants only
+### Combine results
+  - Overall QC per sample (obs Q30 & Q40, total reads, duplication rate, insert size etc.)
+  - visual graph comparing reads covered at 400X between the two datasets
+### Sample specific results
+  - Each sample has a breakdown of the results described above for that specific sample
+
 
 ## Credits
 
-nf-core/seglhqiaseq was originally written by Alexander Smith.
+SEGLH/seglh_ngs_validation was originally written by Alexander Smith based on nf-core/seglhqiaseq.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
