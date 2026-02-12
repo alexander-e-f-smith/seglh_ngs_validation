@@ -26,7 +26,7 @@ process EXTRACT_KCH_QC {
     
     cp ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_out
 
-    norm_index=\$(awk -v var=${manual_expected_reads} -F'\\t' ' NR>1 {print \$4/var}' ${meta}_consolidated_kch_qc_out)
+    norm_index=\$(awk -v var=${manual_expected_reads} -F'\\t' ' NR>1 {print \$5/var}' ${meta}_consolidated_kch_qc_out)
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -44,8 +44,10 @@ process EXTRACT_KCH_QC {
     test1.sh ${QC_json_truth} ${depth_file_truth} ${meta}_consolidated_kch_qc_truth exp && \
 
     paste -d "\\t" ${meta}_consolidated_kch_qc ${meta}_consolidated_kch_qc_truth |  tee -a ${meta}_consolidated_kch_qc_out > /dev/null && \
+
+    cat ${meta}_consolidated_kch_qc_out
     
-    norm_index=\$(awk -F'\\t' ' NR>1 {print \$4/\$21}' ${meta}_consolidated_kch_qc_out)
+    norm_index=\$(awk -F'\\t' ' NR>1 {print \$5/\$23}' ${meta}_consolidated_kch_qc_out)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

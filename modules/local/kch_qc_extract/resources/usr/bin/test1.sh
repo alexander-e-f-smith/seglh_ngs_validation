@@ -5,18 +5,19 @@ outname=$3
 type=$4
 
 basename1=$(basename $input_json .json)
-header1="${type}_Sample_name\t${type}_Total_paired_reads_(fastqc)\t${type}_>Q30_base_quality_proportion\t${type}_Total_processed_paired_reads\t${type}_Duplication_rate\t${type}_Failed_primers\t${type}_On_target_molecules_proportion\t${type}_MEDIAN_INSERT_SIZE\t${type}_MEAN_INSERT_SIZE\t"
+header1="${type}_Sample_name\t${type}_Total_paired_reads_(fastqc)\t${type}_>Q30_base_quality_proportion\t${type}_>Q40_base_quality_proportion\t${type}_Total_processed_paired_reads\t${type}_Duplication_rate\t${type}_Failed_primers\t${type}_On_target_molecules_proportion\t${type}_MEDIAN_INSERT_SIZE\t${type}_MEAN_INSERT_SIZE\t"
 echo -e ${header1} | tee -a ${basename1}_qc > /dev/null
 jq1=$(jq '.[]  | select( .type |contains("fastqc")) | .data."Basic Statistics".contents'  $input_json | jq -s '.[0]."Total Sequences"')
 jq2=$(jq '.[]  | select( .type |contains("base_quality_metrics")) | .data.metrics.contents.Q30' $input_json)
-jq3=$(jq '.[]  | select( .type |contains("alignment_summary_metrics")) | .data.metrics.contents | .[0].TOTAL_READS' $input_json)
-jq4=$(jq '.[]  | select( .type |contains("DUPLICATION")) | .data.metrics.contents.DUPLICATION ' $input_json)
-jq5=$(jq '.[]  | select( .type |contains("DUPLICATION")) | .data.metrics.contents.FAILED_PRIMERS ' $input_json)
-jq6=$(jq '.[]  | select( .type |contains("DUPLICATION")) | .data.metrics.contents.ON_TARGET_MOLECULES_FRAC ' $input_json)
-jq7=$(jq '.[]  | select( .type |contains("insert_size_metrics")) | .data.metrics.contents.MEDIAN_INSERT_SIZE' $input_json)
-jq8=$(jq '.[]  | select( .type |contains("insert_size_metrics")) | .data.metrics.contents.MEAN_INSERT_SIZE'  $input_json)
+jq3=$(jq '.[]  | select( .type |contains("base_quality_metrics")) | .data.metrics.contents.Q40' $input_json)
+jq4=$(jq '.[]  | select( .type |contains("alignment_summary_metrics")) | .data.metrics.contents | .[0].TOTAL_READS' $input_json)
+jq5=$(jq '.[]  | select( .type |contains("DUPLICATION")) | .data.metrics.contents.DUPLICATION ' $input_json)
+jq6=$(jq '.[]  | select( .type |contains("DUPLICATION")) | .data.metrics.contents.FAILED_PRIMERS ' $input_json)
+jq7=$(jq '.[]  | select( .type |contains("DUPLICATION")) | .data.metrics.contents.ON_TARGET_MOLECULES_FRAC ' $input_json)
+jq8=$(jq '.[]  | select( .type |contains("insert_size_metrics")) | .data.metrics.contents.MEDIAN_INSERT_SIZE' $input_json)
+jq9=$(jq '.[]  | select( .type |contains("insert_size_metrics")) | .data.metrics.contents.MEAN_INSERT_SIZE'  $input_json)
 
-echo -e ${basename1}'\t'${jq1}'\t'${jq2}'\t'${jq3}'\t'${jq4}'\t'${jq5}'\t'${jq6}'\t'${jq7}'\t'${jq8}'\t' | tee -a ${basename1}_qc > /dev/null
+echo -e ${basename1}'\t'${jq1}'\t'${jq2}'\t'${jq3}'\t'${jq4}'\t'${jq5}'\t'${jq6}'\t'${jq7}'\t'${jq8}'\t'${jq9}'\t' | tee -a ${basename1}_qc > /dev/null
 
 
 # extract coverage for snappy exon coverage file
